@@ -139,3 +139,26 @@
   .page-heading h1{font-size:24px}
   .hero-copy{max-width:86%}
 }
+
+/* Premium progress dashboard + Google account / backup controls */
+#page-phase7 .p7-grid:last-of-type>.panel:last-child{background:radial-gradient(circle at 92% 4%,#6251b83b,transparent 34%),linear-gradient(145deg,#211c4b,#111b38 72%,#10152d);border:1px solid #9b8bff45;box-shadow:0 20px 58px #05041470}
+#page-phase7 .p7-kpis{gap:11px;margin:20px 0 17px}
+#page-phase7 .p7-kpis>div{padding:16px 15px;border-radius:16px;background:linear-gradient(145deg,#ffffff12,#ffffff05);border:1px solid #ffffff18;box-shadow:inset 0 1px #ffffff0b;min-height:91px}
+#page-phase7 .p7-kpis small{display:block;color:#aaa5d2;font-size:10px;letter-spacing:.06em}
+#page-phase7 .p7-kpis b{display:block;color:#fff;font-size:23px;letter-spacing:-.045em;margin-top:7px}
+#page-phase7 .p7-chart{min-height:190px;padding:18px 15px 12px;border-radius:17px;background:linear-gradient(135deg,#8f79ff14,#54baff0a);border:1px solid #ffffff12}
+#page-phase7 .p7-chart-col{min-height:150px}
+#page-phase7 .p7-chart-bar{background:linear-gradient(180deg,#8e7cff,#4eb9f2);box-shadow:0 0 20px #7d82ff40;border-radius:9px 9px 4px 4px}
+#page-phase7 .p7-achievement{background:#ffffff07;border-color:#ffffff14;padding:13px;border-radius:14px}
+#page-phase7 .p7-achievement.earned{background:linear-gradient(110deg,#9a81ff20,#53b8e915);border-color:#8c85ff66;box-shadow:inset 0 0 22px #8b7aff0a}
+#page-phase7 #p7Status{padding:12px 14px;border-radius:12px;background:#ffffff08}
+.cloud-panel{background:radial-gradient(circle at 100% 0,#5279d52b,transparent 40%),linear-gradient(145deg,#19183d,#11142b)}
+.google-login-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:12px;padding:13px 16px;border-radius:13px;border:1px solid #ffffff25;background:#f8f8fb;color:#24232b;font-weight:800;font-size:13px;min-height:49px}
+.google-login-btn:disabled{opacity:.6}
+.google-mark{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#fff;color:#4285f4;font-size:18px;font-weight:900}
+.cloud-divider{display:flex;align-items:center;gap:12px;color:#8f8bad;font-size:10px;margin:17px 0}
+.cloud-divider:before,.cloud-divider:after{content:"";height:1px;background:#ffffff18;flex:1}
+.drive-actions{margin-top:18px;padding:16px;border:1px solid #78a9ff2b;border-radius:15px;background:linear-gradient(120deg,#4b82d018,#8d75ff12)}
+.drive-actions>div:first-child{display:grid;gap:4px;margin-bottom:12px}
+.drive-actions b{font-size:12px}.drive-actions small{font-size:10px;color:var(--muted)}
+@media(max-width:600px){#page-phase7 .p7-kpis b{font-size:20px}.google-login-btn{font-size:14px}.drive-actions .data-actions{display:grid;grid-template-columns:1fr 1fr}}
