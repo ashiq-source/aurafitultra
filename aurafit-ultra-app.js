@@ -1,4 +1,6 @@
 import { AuraFitStore } from './aurafit-ultra-data-layer.js';
+import { Capacitor } from '@capacitor/core';
+import { LocalNotifications } from '@capacitor/local-notifications';
 
 const $ = id => document.getElementById(id);
 const todayISO = () => new Date().toISOString().slice(0,10);
@@ -28,30 +30,83 @@ function renderWater(){const pct=Math.min(100,Math.round(waterToday/waterGoal*10
 function renderSettings(){$('settingStart').value=profile.startWeightKg??'';$('settingTarget').value=profile.targetWeightKg??'';$('settingWaterGoal').value=waterGoal;}
 function openModal(kind,item=null){editingRoutine=item;const fields=$('modalFields');if(kind==='routine'){$('modalTitle').textContent=item?(lang==='bn'?'রিমাইন্ডার সম্পাদনা':'Edit reminder'):t('addReminder');fields.innerHTML=`<div class="modal-fields"><label class="field"><span>${escapeHTML(t('time'))}</span><input name="time" type="time" required value="${escapeHTML(item?.time||'08:00')}"></label><label class="field"><span>${escapeHTML(t('reminderTitle'))}</span><input name="title" required maxlength="100" value="${escapeHTML(lang==='bn'?(item?.title||''):(item?.title_en||item?.title||''))}"></label><label class="field"><span>${escapeHTML(t('description'))}</span><input name="desc" maxlength="250" value="${escapeHTML(lang==='bn'?(item?.desc||''):(item?.desc_en||item?.desc||''))}"></label></div>`;$('recordForm').dataset.kind='routine';}else if(kind==='weight'){$('modalTitle').textContent=t('logWeight');fields.innerHTML=`<div class="modal-fields"><label class="field"><span>${escapeHTML(t('weightKg'))}</span><input name="weight" type="number" min="1" max="500" step="0.1" required placeholder="72.5"></label><label class="field"><span>${escapeHTML(t('note'))}</span><input name="note" maxlength="180" placeholder=""></label></div>`;$('recordForm').dataset.kind='weight';}else{$('modalTitle').textContent=t('customWater');fields.innerHTML=`<div class="modal-fields"><label class="field"><span>${escapeHTML(t('waterMl'))}</span><input name="ml" type="number" min="1" max="5000" step="1" required placeholder="300"></label></div>`;$('recordForm').dataset.kind='water';}$('modalBackdrop').hidden=false;fields.querySelector('input')?.focus();}
 function closeModal(){$('modalBackdrop').hidden=true;$('recordForm').reset();editingRoutine=null;}
-async function saveRoutine(form){const data=new FormData(form),time=String(data.get('time')||''),title=String(data.get('title')||'').trim(),desc=String(data.get('desc')||'').trim();if(!title||!/^([01]\d|2[0-3]):[0-5]\d$/.test(time))throw new Error(t('invalid'));const existing=editingRoutine;const item={...(existing||{}),id:existing?.id||uid('routine'),time,enabled:existing?.enabled??true,updatedAt:new Date().toISOString(),schemaVersion:1,source:'user'};if(lang==='bn'){item.title=title;item.desc=desc;item.title_en=existing?.title_en||title;item.desc_en=existing?.desc_en||desc;}else{item.title_en=title;item.desc_en=desc;item.title=existing?.title||title;item.desc=existing?.desc||desc;}await store.put('daily_routines',item);}
+async function saveRoutine(form){const data=new FormData(form),time=String(data.get('time')||''),title=String(data.get('title')||'').trim(),desc=String(data.get('desc')||'').trim();if(!title||!/^([01]\d|2[0-3]):[0-5]\d$/.test(time))throw new Error(t('invalid'));const existing=editingRoutine;const item={...(existing||{}),id:existing?.id||uid('routine'),time,enabled:existing?.enabled??true,updatedAt:new Date().toISOString(),schemaVersion:1,source:'user'};if(lang==='bn'){item.title=title;item.desc=desc;item.title_en=existing?.title_en||title;item.desc_en=existing?.desc_en||desc;}else{item.title_en=title;item.desc_en=desc;item.title=existing?.title||title;item.desc=existing?.desc||desc;}await store.put('daily_routines',item);if(isNativeAndroid())await syncNativeRoutineNotifications();}
 async function submitForm(e){e.preventDefault();const form=e.currentTarget,kind=form.dataset.kind,data=new FormData(form);try{if(kind==='routine'){await saveRoutine(form);toast(t('routineAdded'));}else if(kind==='weight'){const n=Number(data.get('weight'));if(!Number.isFinite(n)||n<=0||n>500)throw new Error(t('invalid'));const record={id:uid('weight'),weightKg:n,note:String(data.get('note')||'').trim(),dateISO:todayISO(),legacyDate:null,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),schemaVersion:1,source:'user'};await store.put('weight_logs',record);if(!profile.startWeightKg)profile.startWeightKg=n;profile.currentWeightKg=n;profile.updatedAt=new Date().toISOString();await store.put('profile',{id:'primary',...profile});toast(t('weightAdded'));}else{const n=Number(data.get('ml'));if(!Number.isInteger(n)||n<=0||n>5000)throw new Error(t('invalid'));await addWater(n);toast(t('waterAdded'));}closeModal();await loadAll();}catch(err){toast(err.message||t('invalid'));}}
 async function addWater(amount){const current=await store.get('daily_water_totals',todayISO());const record={...(current||{}),dateISO:todayISO(),totalMl:Math.min(20000,(current?.totalMl||0)+amount),datePrecision:'day',updatedAt:new Date().toISOString(),createdAt:current?.createdAt||new Date().toISOString(),schemaVersion:1,source:'user'};await store.put('daily_water_totals',record);waterToday=record.totalMl;waterDate=record.dateISO;renderAll();}
 async function saveSettings(){const start=$('settingStart').value,target=$('settingTarget').value,goal=Number($('settingWaterGoal').value);if((start&&(!Number.isFinite(Number(start))||Number(start)<=0||Number(start)>500))||(target&&(!Number.isFinite(Number(target))||Number(target)<=0||Number(target)>500))||!Number.isInteger(goal)||goal<250||goal>10000){toast(t('invalid'));return;}profile={...profile,id:'primary',updatedAt:new Date().toISOString()};if(start)profile.startWeightKg=Number(start);else delete profile.startWeightKg;if(target)profile.targetWeightKg=Number(target);else delete profile.targetWeightKg;await store.put('profile',profile);waterGoal=goal;await store.put('settings',{key:'waterGoal',value:goal,updatedAt:new Date().toISOString()});toast(t('goalSaved'));renderAll();}
 async function exportBackup(){const backup=await store.exportBackup();const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`aurafit-ultra-backup-${todayISO()}.json`;a.click();URL.revokeObjectURL(url);toast(t('backupDone'));}
-async function handleClick(e){const pageBtn=e.target.closest('[data-page]');if(pageBtn){go(pageBtn.dataset.page);return;}const goBtn=e.target.closest('[data-go]');if(goBtn){go(goBtn.dataset.go);return;}const water=e.target.closest('[data-water]');if(water){await addWater(Number(water.dataset.water));toast(t('waterAdded'));return;}const toggle=e.target.closest('[data-toggle]');if(toggle){const item=routines.find(x=>String(x.id)===toggle.dataset.toggle);if(item){await store.put('daily_routines',{...item,enabled:item.enabled===false,updatedAt:new Date().toISOString()});await loadAll();}return;}const edit=e.target.closest('[data-edit]');if(edit){const item=routines.find(x=>String(x.id)===edit.dataset.edit);if(item)openModal('routine',item);return;}const del=e.target.closest('[data-delete-routine]');if(del){await store.delete('daily_routines',del.dataset.deleteRoutine);await loadAll();toast(t('deleted'));return;}const delW=e.target.closest('[data-delete-weight]');if(delW){await store.delete('weight_logs',delW.dataset.deleteWeight);await loadAll();toast(t('deleted'));}}
+async function handleClick(e){const pageBtn=e.target.closest('[data-page]');if(pageBtn){go(pageBtn.dataset.page);return;}const goBtn=e.target.closest('[data-go]');if(goBtn){go(goBtn.dataset.go);return;}const water=e.target.closest('[data-water]');if(water){await addWater(Number(water.dataset.water));toast(t('waterAdded'));return;}const toggle=e.target.closest('[data-toggle]');if(toggle){const item=routines.find(x=>String(x.id)===toggle.dataset.toggle);if(item){await store.put('daily_routines',{...item,enabled:item.enabled===false,updatedAt:new Date().toISOString()});await loadAll();if(isNativeAndroid())await syncNativeRoutineNotifications();}return;}const edit=e.target.closest('[data-edit]');if(edit){const item=routines.find(x=>String(x.id)===edit.dataset.edit);if(item)openModal('routine',item);return;}const del=e.target.closest('[data-delete-routine]');if(del){await store.delete('daily_routines',del.dataset.deleteRoutine);await loadAll();if(isNativeAndroid())await syncNativeRoutineNotifications();toast(t('deleted'));return;}const delW=e.target.closest('[data-delete-weight]');if(delW){await store.delete('weight_logs',delW.dataset.deleteWeight);await loadAll();toast(t('deleted'));}}
 
 let swRegistration=null, installPrompt=null, alarmTimer=null;
+const ROUTINE_NOTIFICATION_BASE=1400000000;
+const ROUTINE_NOTIFICATION_RANGE=400000000;
+const isNativeAndroid=()=>Capacitor.isNativePlatform()&&Capacitor.getPlatform()==='android';
+function routineNotificationId(routine){
+  let hash=2166136261;
+  for(const ch of String(routine.id)){hash^=ch.charCodeAt(0);hash=Math.imul(hash,16777619);}
+  return ROUTINE_NOTIFICATION_BASE+(hash>>>0)%ROUTINE_NOTIFICATION_RANGE;
+}
+function routineNotificationText(r){
+  return {
+    title:String(lang==='bn'?(r.title||r.title_en||'AuraFit Reminder'):(r.title_en||r.title||'AuraFit Reminder')),
+    body:String(lang==='bn'?(r.desc||'আপনার রুটিনের সময় হয়েছে।'):(r.desc_en||r.desc||'It is time for your routine.'))
+  };
+}
+async function syncNativeRoutineNotifications(){
+  if(!isNativeAndroid())return;
+  const pending=await LocalNotifications.getPending();
+  const oldIds=pending.notifications.filter(n=>n.id>=ROUTINE_NOTIFICATION_BASE&&n.id<ROUTINE_NOTIFICATION_BASE+ROUTINE_NOTIFICATION_RANGE).map(n=>({id:n.id}));
+  if(oldIds.length)await LocalNotifications.cancel({notifications:oldIds});
+  const notifications=routines.filter(r=>r.enabled!==false&&/^([01]\\d|2[0-3]):[0-5]\\d$/.test(String(r.time||''))).map(r=>{
+    const [hour,minute]=r.time.split(':').map(Number);
+    return {id:routineNotificationId(r),...routineNotificationText(r),schedule:{on:{hour,minute},allowWhileIdle:true},channelId:'aurafit-routines',extra:{routineId:String(r.id)}};
+  });
+  if(notifications.length)await LocalNotifications.schedule({notifications});
+  return notifications.length;
+}
 async function setupPWA(){
   if('serviceWorker' in navigator){try{swRegistration=await navigator.serviceWorker.register('./service-worker.js');}catch(e){console.warn('PWA service worker unavailable',e);}}
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;const b=$('installApp');if(b)b.hidden=false;});
   window.addEventListener('appinstalled',()=>{installPrompt=null;const b=$('installApp');if(b)b.hidden=true;});
-  if($('notificationStatus'))$('notificationStatus').textContent=('Notification' in window && Notification.permission==='granted')?'Notifications enabled for this browser.':(('Notification' in window && Notification.permission==='denied')?'Notifications blocked in browser settings.':'Notifications are optional; reminders need the app to be open.');
-  alarmTimer=setInterval(checkForegroundReminders,30000);
+  if(isNativeAndroid()){
+    try{
+      await LocalNotifications.createChannel({id:'aurafit-routines',name:'AuraFit Routine Reminders',description:'Daily fitness and wellness routine reminders',importance:4,visibility:1,vibration:true});
+      const permission=await LocalNotifications.checkPermissions();
+      $('notificationStatus').textContent=permission.display==='granted'?'Notifications are allowed. Daily routine reminders are ready.':'Tap Enable notifications to allow Android reminders.';
+      if(permission.display==='granted')await syncNativeRoutineNotifications();
+    }catch(e){$('notificationStatus').textContent='Notification setup needs attention: '+e.message;console.warn('Native notification setup failed',e);}
+  }else if($('notificationStatus')){
+    $('notificationStatus').textContent=('Notification' in window && Notification.permission==='granted')?'Notifications enabled. Keep AuraFit open for routine reminders.':(('Notification' in window && Notification.permission==='denied')?'Notifications blocked. Change permission in browser settings.':'Notifications are optional; browser reminders need the app open.');
+  }
+  if(!isNativeAndroid())alarmTimer=setInterval(checkForegroundReminders,30000);
 }
 async function checkForegroundReminders(){
   if(document.visibilityState!=='visible'||!store||!('Notification' in window)||Notification.permission!=='granted')return;
   const now=new Date(), hhmm=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`, day=todayISO();
   for(const r of routines){if(r.enabled===false||r.time!==hhmm)continue;const key=`alarm:${day}:${r.id}:${hhmm}`;if(await store.get('settings',key))continue;
-    const title=lang==='bn'?(r.title||r.title_en):(r.title_en||r.title);const body=lang==='bn'?(r.desc||'আপনার রুটিনের সময় হয়েছে।'):(r.desc_en||r.desc||'It is time for your routine.');
+    const {title,body}=routineNotificationText(r);
     try{if(swRegistration?.showNotification)await swRegistration.showNotification(title,{body,icon:'./icons/icon.svg',tag:key});else new Notification(title,{body,tag:key});await store.put('settings',{key,value:true,updatedAt:new Date().toISOString()});}catch(e){console.warn('Notification failed',e);}
   }
 }
-async function requestNotifications(){if(!('Notification' in window)){toast('This browser does not support notifications.');return;}const result=await Notification.requestPermission();$('notificationStatus').textContent=result==='granted'?'Notifications enabled. Keep AuraFit open for routine reminders.':(result==='denied'?'Notifications blocked. Change permission in browser settings.':'Permission not granted.');toast(result==='granted'?'Notifications enabled.':'Notification permission not granted.');}
+async function requestNotifications(){
+  if(isNativeAndroid()){
+    let result=await LocalNotifications.checkPermissions();
+    if(result.display!=='granted')result=await LocalNotifications.requestPermissions();
+    if(result.display!=='granted'){
+      $('notificationStatus').textContent='Permission not granted. Open Android Settings → Apps → AuraFit AI Ultra → Notifications and allow notifications.';
+      toast('Android notification permission was not granted.');return;
+    }
+    await LocalNotifications.createChannel({id:'aurafit-routines',name:'AuraFit Routine Reminders',description:'Daily fitness and wellness routine reminders',importance:4,visibility:1,vibration:true});
+    const count=await syncNativeRoutineNotifications();
+    $('notificationStatus').textContent=`Notifications enabled. ${count} daily routine reminder(s) scheduled.`;
+    toast('Android notifications enabled.');
+    return;
+  }
+  if(!('Notification' in window)){toast('This browser does not support notifications.');return;}
+  const result=await Notification.requestPermission();
+  $('notificationStatus').textContent=result==='granted'?'Notifications enabled. Keep AuraFit open for routine reminders.':(result==='denied'?'Notifications blocked. Change permission in browser settings.':'Permission not granted.');
+  toast(result==='granted'?'Notifications enabled.':'Notification permission not granted.');
+}
 async function installPWA(){if(!installPrompt){toast('Use your browser menu and choose Install app / Add to Home Screen.');return;}installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;$('installApp').hidden=true;}
 function selectedFitnessContext(){return {language:lang==='bn'?'Bengali':'English',currentWeightKg:weights.at(-1)?.weightKg??null,targetWeightKg:profile.targetWeightKg??null,startWeightKg:profile.startWeightKg??null,recentWeightEntries:weights.slice(-8).map(x=>({date:x.dateISO||x.legacyDate,weightKg:x.weightKg})),waterTodayMl:waterToday,waterGoalMl:waterGoal,activeRoutines:routines.filter(x=>x.enabled!==false).map(x=>({time:x.time,title:lang==='bn'?(x.title||x.title_en):(x.title_en||x.title)}))};}
 const taskPrompts={meal:'Create a practical, balanced one-day meal idea plan using common affordable foods. Ask for missing dietary constraints rather than assuming allergies or medical needs. Include portions as approximate suggestions.',workout:'Create a beginner-friendly, adaptable weekly movement plan with warm-up, cool-down, rest days and low-impact alternatives. Ask about injuries or limitations; do not prescribe through pain.',recovery:'Create a gentle recovery and sleep-habit guide. Avoid medical diagnosis or supplement/medication recommendations.',progress:'Review only the supplied fitness summary. Explain trends cautiously, note missing data, and suggest sustainable next steps without judging body size.'};
