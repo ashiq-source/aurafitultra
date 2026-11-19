@@ -2,6 +2,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { Capacitor } from 'https://esm.sh/@capacitor/core@7';
 import { App } from 'https://esm.sh/@capacitor/app@7';
+import { Browser } from 'https://esm.sh/@capacitor/browser@7';
 import { openAuraFitDB, STORES } from './aurafit-ultra-data-layer.js';
 const cfg=window.AURAFIT_CONFIG||{};
 const status=m=>{const el=document.getElementById('cloudSyncStatus');if(el)el.textContent=m;};
@@ -40,8 +41,11 @@ export async function initCloudAuth(){
  return session;
 }
 export async function googleSignIn(){
- const {data,error}=await getCloudClient().auth.signInWithOAuth({provider:'google',options:{redirectTo:oauthRedirect(),scopes:'openid email profile https://www.googleapis.com/auth/drive.file',queryParams:{access_type:'offline',prompt:'consent'}}});
- if(error)throw error;return data;
+ const native=Capacitor.isNativePlatform();
+ const {data,error}=await getCloudClient().auth.signInWithOAuth({provider:'google',options:{redirectTo:oauthRedirect(),skipBrowserRedirect:native,scopes:'openid email profile https://www.googleapis.com/auth/drive.file',queryParams:{access_type:'offline',prompt:'consent'}}});
+ if(error)throw error;
+ if(native&&data?.url)await Browser.open({url:data.url});
+ return data;
 }
 export async function cloudSignIn(email,password){const {data,error}=await getCloudClient().auth.signInWithPassword({email,password});if(error)throw error;return data;}
 export async function cloudSignUp(email,password){const {data,error}=await getCloudClient().auth.signUp({email,password});if(error)throw error;return data;}
