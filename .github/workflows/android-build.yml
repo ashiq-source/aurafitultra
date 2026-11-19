@@ -38,6 +38,7 @@ jobs:
         run: |
           mkdir -p public/icons
           cp aurafit-ultra.html public/index.html
+          cp aurafit-ultra.html public/aurafit-ultra.html
           cp aurafit-ultra.css aurafit-android.css aurafit-ultra-app.js aurafit-ultra-data-layer.js public/
           cp aurafit-phase5.js aurafit-phase6.js aurafit-phase7.js aurafit-phase8.js public/
           cp aurafit-config.js aurafit-cloud.js aurafit-android.js public/
