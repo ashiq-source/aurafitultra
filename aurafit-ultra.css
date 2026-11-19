@@ -43,3 +43,99 @@
   .water-add b{font-size:16px}
   .water-add small{font-size:11px}
 }
+
+
+/* AuraFit visual refresh — image-led, page-specific premium layouts (v9) */
+.hero-card{
+  background-image:
+    linear-gradient(90deg,rgba(18,14,48,.98) 0%,rgba(22,19,57,.94) 42%,rgba(19,25,57,.34) 100%),
+    url("https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1400&q=85");
+  background-position:center, right 42%;
+  background-size:cover;
+}
+.hero-art{right:4%;width:300px}
+.hero-glyph{backdrop-filter:blur(8px)}
+/* Each feature page gets its own editorial photo header and accent mood. */
+.page-heading{
+  position:relative;isolation:isolate;overflow:hidden;min-height:164px;
+  padding:25px 28px;margin:0 0 22px;border:1px solid #ffffff18;
+  border-radius:22px;background-color:#171436;background-size:cover;background-position:center;
+  box-shadow:0 16px 42px #03020d35;
+}
+.page-heading:after{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(90deg,rgba(12,10,31,.97) 0%,rgba(15,13,37,.86) 48%,rgba(13,12,34,.22) 100%);
+}
+.page-heading h1{max-width:650px;text-shadow:0 2px 18px #0008}
+.page-heading p{max-width:520px;color:#e1def5}
+#page-routine .page-heading{
+  background-image:url("https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1300&q=85");
+  border-color:#a58af84d
+}
+#page-weight .page-heading{
+  background-image:url("https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1300&q=85");
+  border-color:#69b4ff55
+}
+#page-water .page-heading{
+  background-image:url("https://images.unsplash.com/photo-1532634896-26909d0d4b1b?auto=format&fit=crop&w=1300&q=85");
+  border-color:#66d9e855
+}
+#page-health .page-heading{
+  background-image:url("https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1300&q=85");
+  border-color:#68d6b055
+}
+#page-coach .page-heading{
+  background-image:url("https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=1300&q=85");
+  border-color:#e9a1db55
+}
+#page-intelligence .page-heading{
+  background-image:url("https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1300&q=85");
+  border-color:#8b9cff55
+}
+#page-phase7 .page-heading{
+  background-image:url("https://images.unsplash.com/photo-1517838277536-fd4e6f6f5b8d?auto=format&fit=crop&w=1300&q=85");
+  border-color:#f0b36d55
+}
+#page-phase8 .page-heading{
+  background-image:url("https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1300&q=85");
+  border-color:#a58af855
+}
+/* Distinct page accents so all screens do not feel like copies. */
+#page-routine{--page-accent:#b59aff;--page-glow:#8d72ed}
+#page-weight{--page-accent:#83c8ff;--page-glow:#438ee8}
+#page-water{--page-accent:#77e2ec;--page-glow:#36a8d9}
+#page-health{--page-accent:#8de0b6;--page-glow:#3aa77e}
+#page-coach{--page-accent:#f0b4e3;--page-glow:#b66baf}
+#page-intelligence{--page-accent:#aebaff;--page-glow:#667be8}
+#page-phase7{--page-accent:#ffd08e;--page-glow:#c78a42}
+#page-phase8{--page-accent:#c1aaff;--page-glow:#8068e5}
+.page:not(#page-home) .panel{
+  border-top:2px solid color-mix(in srgb,var(--page-accent,#a78bfa) 48%,transparent);
+  background:linear-gradient(145deg,color-mix(in srgb,var(--page-glow,#8068e5) 12%,#19163a),#12102bea 78%);
+}
+.page:not(#page-home) .count-pill,.page:not(#page-home) .goal-pill{
+  border-color:color-mix(in srgb,var(--page-accent,#a78bfa) 42%,transparent);
+  color:var(--page-accent,#c5b8ff);
+}
+#page-routine .routine-row{background:linear-gradient(100deg,#a78bfa12,#ffffff04)}
+#page-weight .chart-panel{background:linear-gradient(145deg,#102642,#12102bea)}
+#page-water .water-panel{background:radial-gradient(ellipse at 88% 18%,#39b8e52b,transparent 42%),linear-gradient(145deg,#102b43,#12102bea)}
+#page-health .p5-grid>.panel:nth-child(odd){background:linear-gradient(145deg,#15362f,#121d2b)}
+#page-health .p5-grid>.panel:nth-child(even){background:linear-gradient(145deg,#222b42,#17152f)}
+#page-coach .ai-consent-panel{background:linear-gradient(120deg,#321e43,#19163a)}
+#page-coach .ai-tool{background:linear-gradient(145deg,#2a1d40,#17152f);border-color:#e9a1db35}
+#page-intelligence .p6-panel{background:linear-gradient(145deg,#1d2148,#151532)}
+#page-phase7 .p7-grid>.panel{background:linear-gradient(145deg,#33291d,#17152f)}
+@media(max-width:760px){
+  .page-heading{min-height:150px;padding:21px 18px;margin-bottom:18px;background-position:center,right center}
+  .page-heading:after{background:linear-gradient(90deg,rgba(12,10,31,.96),rgba(15,13,37,.76) 68%,rgba(13,12,34,.42))}
+  .page-heading h1{font-size:27px}
+  .hero-card{background-position:center,right center;padding:25px 22px;min-height:245px}
+  .hero-art{right:-65px;opacity:.52;transform:translateY(-50%) scale(.82)}
+  .hero-copy{max-width:78%}
+}
+@media(max-width:420px){
+  .page-heading{min-height:142px;padding:18px 15px}
+  .page-heading h1{font-size:24px}
+  .hero-copy{max-width:86%}
+}
