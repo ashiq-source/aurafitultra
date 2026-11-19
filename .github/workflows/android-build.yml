@@ -1,0 +1,75 @@
+name: AuraFit Android Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-android:
+    name: Test and build APK / AAB
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Prepare Capacitor web assets
+        shell: bash
+        run: |
+          mkdir -p public/icons
+          cp aurafit-ultra.html aurafit-ultra.css aurafit-android.css aurafit-ultra-app.js aurafit-ultra-data-layer.js public/
+          cp aurafit-phase5.js aurafit-phase6.js aurafit-phase7.js aurafit-phase8.js public/
+          cp aurafit-config.js aurafit-cloud.js aurafit-android.js public/
+          cp manifest.webmanifest service-worker.js migration-console.html public/
+          cp icons/icon.svg public/icons/icon.svg
+
+      - name: Run syntax checks
+        run: npm run check
+
+      - name: Run project tests
+        run: npm test
+
+      - name: Generate Android platform when not committed
+        run: |
+          if [ ! -d android ]; then
+            npx cap add android
+          fi
+
+      - name: Sync Capacitor Android project
+        run: npx cap sync android
+
+      - name: Build debug APK and release AAB
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug bundleRelease
+
+      - name: Upload Android build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: AuraFit-AI-Ultra-Android
+          if-no-files-found: error
+          path: |
+            android/app/build/outputs/apk/debug/app-debug.apk
+            android/app/build/outputs/bundle/release/app-release.aab
