@@ -23,6 +23,13 @@ app.use((req,res,next)=>{
   const origin=req.headers.origin;
   if(origin && allowedOrigins.length && !allowedOrigins.includes(origin)) return res.status(403).json({error:'Origin not allowed.'});
   if(origin && !allowedOrigins.length && process.env.NODE_ENV==='production') return res.status(403).json({error:'Configure ALLOWED_ORIGINS for production.'});
+  if(origin && allowedOrigins.includes(origin)){
+    res.setHeader('Access-Control-Allow-Origin',origin);
+    res.setHeader('Vary','Origin');
+    res.setHeader('Access-Control-Allow-Methods','GET,POST,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers','Content-Type,Authorization');
+  }
+  if(req.method==='OPTIONS') return res.sendStatus(204);
   next();
 });
 app.use(express.json({limit:'20kb',strict:true}));
