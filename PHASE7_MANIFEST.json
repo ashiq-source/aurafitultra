@@ -1,0 +1,67 @@
+{
+  "name": "AuraFit AI Ultra",
+  "phase": 7,
+  "version": "7.0.0",
+  "database": "aurafit_ultra_local",
+  "indexedDBSchemaVersion": 2,
+  "schemaChange": false,
+  "features": [
+    "adaptive weekly schedule",
+    "local meal suggestions",
+    "exercise progression logger",
+    "advanced dashboard",
+    "achievements and streaks",
+    "print-to-PDF report",
+    "workout CSV export",
+    "PWA v7 shell cache",
+    "Bengali/English labels and mobile navigation"
+  ],
+  "validation": {
+    "syntax": "passed",
+    "automated_tests": "27/27 passed",
+    "browser_visual_qa": "not performed",
+    "live_gemini": "not tested; not required for Phase 7"
+  },
+  "files": {
+    "aurafit-ultra.html": {
+      "bytes": 33028,
+      "sha256": "b82175ca9d35f1f5e5ebc5624b69ffc003117c477f655560166e13ac59284f49"
+    },
+    "aurafit-ultra.css": {
+      "bytes": 26927,
+      "sha256": "3ad003cc2855d97abf7541b94a4cb6d7541f373446dcb639177ea0e8f915be3b"
+    },
+    "aurafit-phase7.js": {
+      "bytes": 14319,
+      "sha256": "1e6d56c47a42f9f726993bc7c64af0e6081e031697b313780159a79d79dabb66"
+    },
+    "service-worker.js": {
+      "bytes": 1543,
+      "sha256": "36eb86e2c5edc482684d55dc6738c6e07290fea3ad3be71ff4bc2b812457681b"
+    },
+    "server.js": {
+      "bytes": 5367,
+      "sha256": "3a1df65a0ba83b1fd134f7906399d919db3ac5bf87f0f00a6e15e58aeed9630e"
+    },
+    "package.json": {
+      "bytes": 663,
+      "sha256": "6b644d47dc6d516087d4fcf35dff7c6534d4614fbee44d41596cecbaf0f3e931"
+    },
+    "PHASE7_IMPLEMENTATION.md": {
+      "bytes": 2964,
+      "sha256": "e6e91b7a92c11d1e5c8e03f2bc57add0a3c98fe4eb79edc76b90343200385122"
+    },
+    "PHASE7_TEST_REPORT.md": {
+      "bytes": 996,
+      "sha256": "4376a7063c2ed2666f5f9b9e972d26b0083317d75c2bf9f8a97602ca499acc91"
+    },
+    "README_PHASE7.md": {
+      "bytes": 843,
+      "sha256": "dd0116ff40d6d14a614f535bf58fde5d050b8e63ae9cd70946473a1ff66050b5"
+    },
+    "test-phase7.mjs": {
+      "bytes": 2245,
+      "sha256": "48be055ccf1cc403e437d50dcb259ea6a11327a0d2a6b7f203df2c9a1e018f8f"
+    }
+  }
+}

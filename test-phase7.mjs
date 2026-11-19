@@ -1,0 +1,18 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+const html=await readFile(new URL('./aurafit-ultra.html',import.meta.url),'utf8');
+const js=await readFile(new URL('./aurafit-phase7.js',import.meta.url),'utf8');
+const css=await readFile(new URL('./aurafit-ultra.css',import.meta.url),'utf8');
+const sw=await readFile(new URL('./service-worker.js',import.meta.url),'utf8');
+const pkg=JSON.parse(await readFile(new URL('./package.json',import.meta.url),'utf8'));
+test('Phase 7 navigation and page are wired',()=>{assert.match(html,/data-page="phase7"/);assert.match(html,/id="page-phase7"/);assert.match(html,/aurafit-phase7\.js/)});
+test('Phase 7 features expose required controls',()=>{for(const id of ['p7GenerateSchedule','p7Schedule','p7MealIdeas','p7ExerciseForm','p7Progression','p7Chart','p7Achievements','p7Pdf','p7Csv'])assert.ok(html.includes(`id="${id}"`),id)});
+test('Phase 7 reuses existing stores and preserves Phase 1-6 schema',()=>{assert.match(js,/workout_logs/);assert.match(js,/meal_logs/);assert.match(js,/food_catalog/);assert.match(js,/phase7_preferences/);assert.doesNotMatch(js,/indexedDB\.open\([^)]*,\s*3\)/)});
+test('Schedule and daily completion persist locally',()=>{assert.match(js,/phase7_plan/);assert.match(js,/phase7_done/);assert.match(js,/phase7_preferences/)});
+test('Workout progression stores sets, reps and load',()=>{assert.match(js,/exerciseName,sets,reps,loadKg/);assert.match(js,/data7\.workouts/)});
+test('Reports include print-to-PDF and CSV export',()=>{assert.match(js,/window\.print\(\)/);assert.match(js,/text\/csv/)});
+test('PWA cache uses a new v7 namespace and precaches Phase 7 module',()=>{assert.match(sw,/aurafit-ultra-v8-android-shell/);assert.match(sw,/aurafit-phase7\.js/)});
+test('Package scripts include Phase 7 syntax check',()=>{assert.equal(pkg.version,'8.0.0');assert.match(pkg.scripts.check,/aurafit-phase7\.js/)});
+test('Responsive and print report styles are included',()=>{assert.match(css,/@media\(max-width:600px\)/);assert.match(css,/@media print/)});
+test('Phase 7 is reachable from mobile navigation too',()=>{assert.match(html,/<button data-page="phase7"><span>✧<\/span><small>Fitness<\/small><\/button>/)});

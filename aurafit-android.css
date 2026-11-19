@@ -1,0 +1,2 @@
+/* Android safe-area and touch ergonomics */
+html,body{overscroll-behavior-y:contain}body{padding-bottom:env(safe-area-inset-bottom)}button,a,input,select,textarea{touch-action:manipulation}input,select,textarea{font-size:16px} .android-cloud-panel{margin:14px 0;padding:16px;border:1px solid rgba(160,140,255,.25);border-radius:16px;background:rgba(35,27,75,.55)}

@@ -1,0 +1,10 @@
+{
+  "project": "AuraFit AI Ultra",
+  "phase": 6,
+  "version": "6.0.0",
+  "features": ["personalized_plan_preferences", "local_activity_insights", "consent_gated_gemini_plan", "optional_activity_context", "local_ai_history", "pwa_cache_v6"],
+  "database": {"name": "aurafit_ultra_local", "version_change": false, "stores_added": []},
+  "tests": {"passed": 17, "failed": 0},
+  "live_gemini_verified": false,
+  "original_legacy_file_modified": false
+}

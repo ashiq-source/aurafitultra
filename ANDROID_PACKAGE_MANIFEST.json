@@ -1,0 +1,10 @@
+{
+  "project": "AuraFit AI Ultra",
+  "release": "8.0.0-android-foundation",
+  "framework": "Capacitor 7",
+  "appId": "com.aurafit.aiultra",
+  "webDir": "public",
+  "storage": "IndexedDB local-first with opt-in Supabase sync",
+  "deliverables": ["Capacitor Android configuration", "Supabase RLS schema", "Phase 8 reconstruction", "Android build instructions"],
+  "verification": {"syntax_check": "passed", "automated_tests": "32/32 passed", "apk_built": false, "aab_built": false, "supabase_live_test": false, "device_qa": false}
+}

@@ -1,0 +1,12 @@
+{
+  "project": "AuraFit AI Ultra",
+  "phase": 5,
+  "version": "5.0.0",
+  "title": "Advanced Health & Fitness Intelligence",
+  "database": {"name": "aurafit_ultra_local", "previousVersion": 1, "version": 2, "upgradeStrategy": "additive"},
+  "features": ["nutrition logging", "curated food catalogue", "macro goals", "workout history", "sleep tracking", "7/30 day reports", "CSV export", "Bengali/English labels", "PWA cache update"],
+  "newFiles": ["aurafit-phase5.js", "PHASE5_IMPLEMENTATION.md", "PHASE5_TEST_REPORT.md", "PHASE5_MANIFEST.json", "test-phase5.mjs"],
+  "legacyFileModified": false,
+  "networkFoodAPI": false,
+  "medicalDiagnosis": false
+}

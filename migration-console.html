@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#100d2a"><title>AuraFit AI Ultra — Safe Migration</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0b0920;--panel:#151235;--panel2:#1d1945;--line:#37316b;--text:#f4f2ff;--muted:#b8b3d8;--blue:#66a7ff;--violet:#a78bfa;--good:#61d6b0;--warn:#ffd17c;--bad:#ff8d9b}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% -20%,#30226c 0,transparent 45%),var(--bg);color:var(--text);font:15px/1.55 Inter,system-ui,-apple-system,Segoe UI,sans-serif;padding:28px 16px 60px}
+    main{max-width:900px;margin:auto}.brand{display:flex;align-items:center;gap:12px;margin-bottom:28px}.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#8067f4,#3b8ff4);display:grid;place-items:center;font-weight:900;font-size:20px;box-shadow:0 8px 30px #4e49c555}.eyebrow{color:var(--blue);font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:800}h1{font-size:clamp(26px,5vw,40px);line-height:1.1;margin:4px 0 8px}p{color:var(--muted);margin:6px 0}.card{background:linear-gradient(145deg,#19163aee,#11102bea);border:1px solid var(--line);border-radius:20px;padding:22px;margin:16px 0;box-shadow:0 18px 50px #0003}.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}button,.filelabel{border:1px solid #5e55a0;border-radius:12px;padding:11px 16px;color:white;background:linear-gradient(135deg,#6654ce,#337bd0);font-weight:700;cursor:pointer}.secondary{background:#211d4b;border-color:#514b83}.danger{background:#4a2039;border-color:#8d425f}.filelabel input{display:none}button:disabled{opacity:.4;cursor:not-allowed}.status{padding:12px 14px;border-radius:12px;background:#211d4b;color:var(--muted);margin-top:14px;white-space:pre-wrap}.status.good{border:1px solid #357c69;color:var(--good)}.status.warn{border:1px solid #8a6b39;color:var(--warn)}.status.bad{border:1px solid #8e4355;color:var(--bad)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-top:14px}.metric{padding:13px;border:1px solid var(--line);border-radius:13px;background:#100e2b}.metric strong{display:block;font-size:25px;color:#fff}.metric span{font-size:12px;color:var(--muted)}.check{display:flex;gap:10px;align-items:flex-start;margin-top:14px;color:var(--muted)}input[type=checkbox]{margin-top:5px;accent-color:#8c7af2}input[type=file]{max-width:100%}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#0c0a22;border:1px solid var(--line);padding:13px;border-radius:12px;color:#d9d5f5;max-height:240px;overflow:auto;font-size:12px}.small{font-size:12px}.hidden{display:none}.step{color:var(--violet);font-weight:800;font-size:12px;letter-spacing:.1em}.bn{font-family:system-ui,sans-serif}
+  </style>
+</head>
+<body><main>
+  <div class="brand"><div class="logo">A</div><div><div class="eyebrow">AuraFit AI Ultra · Phase 2</div><div style="font-weight:800">Safe Data Migration</div></div></div>
+  <h1>Move your data safely.</h1><p>Preview your legacy AuraFit data, validate it, then import into this browser’s IndexedDB. Your original LocalStorage stays untouched.</p>
+  <section class="card"><div class="step">01 · SELECT SOURCE</div><h2>Choose where the old data comes from</h2>
+    <p>For best results, open this migration page on the <b>same website origin</b> where your old AuraFit AI app stored its data.</p>
+    <div class="actions"><button id="capture">Read this origin’s LocalStorage</button><label class="filelabel secondary">Choose legacy JSON backup<input id="file" type="file" accept="application/json,.json"></label></div>
+    <div id="sourceStatus" class="status">No source selected. Reading LocalStorage is read-only.</div>
+  </section>
+  <section class="card"><div class="step">02 · REVIEW BEFORE IMPORT</div><h2>Migration preview</h2><p>Nothing is written to IndexedDB until you confirm in the final step.</p>
+    <div id="metrics" class="grid"><div class="metric"><strong>—</strong><span>Records to import</span></div></div>
+    <div id="warnings" class="status hidden"></div><div id="quarantine" class="status warn hidden"></div>
+    <div class="actions"><button id="preview" class="secondary" disabled>Validate / Refresh Preview</button><button id="download" class="secondary" disabled>Download redacted snapshot</button></div>
+  </section>
+  <section class="card"><div class="step">03 · EXPLICIT CONFIRMATION</div><h2>Commit to this browser</h2>
+    <p>Import uses one IndexedDB transaction. Existing records are not overwritten. Re-running the same source fingerprint is detected and skipped.</p>
+    <label class="check"><input type="checkbox" id="confirm"><span>I reviewed the preview and authorize importing the valid records into AuraFit AI Ultra on this device.</span></label>
+    <label class="check"><input type="checkbox" id="allowBad"><span>I understand some entries are quarantined and authorize importing the valid entries while retaining the quarantine report.</span></label>
+    <div class="actions"><button id="commit" disabled>Confirm & Import</button></div>
+    <div id="result" class="status">Waiting for a validated preview.</div>
+  </section>
+  <section class="card"><b>Privacy & safety</b><p class="small">The Gemini API key is deliberately excluded from the new database and all new backups. This tool does not upload data, contact Gemini, create an account, or delete legacy keys. Keep the original app and a separate offline backup until you verify the migrated data.</p><p class="small bn">নোট: এই পেজটি পুরোনো অ্যাপের একই origin-এ চালাতে হবে। অন্য domain বা file:// থেকে চালালে পুরোনো LocalStorage পাওয়া যাবে না।</p></section>
+</main>
+<script type="module">
+  import { prepareMigration, inspectMigration, commitMigration, readLegacyLocalStorageSnapshot, redactLegacySecrets } from './aurafit-migration-engine.js';
+  const $ = id => document.getElementById(id);
+  let source = null, preview = null;
+  const setStatus = (id,msg,type='') => { const el=$(id);el.textContent=msg;el.className=`status ${type}`; };
+  function updateButtons(){ $('preview').disabled=!source; $('download').disabled=!source; $('commit').disabled=!preview || !$('confirm').checked || (preview.quarantinedCount>0 && !$('allowBad').checked); }
+  function renderPreview(p){
+    preview=p;
+    const entries=Object.entries(p.counts).filter(([,n])=>n>0);
+    $('metrics').innerHTML=`<div class="metric"><strong>${p.totalValid}</strong><span>Valid records</span></div><div class="metric"><strong>${p.quarantinedCount}</strong><span>Quarantined entries</span></div><div class="metric"><strong>${entries.length}</strong><span>Stores with data</span></div><div class="metric"><strong>${p.sourceFingerprint.slice(0,12)}</strong><span>Source fingerprint</span></div>`+entries.map(([k,n])=>`<div class="metric"><strong>${n}</strong><span>${k}</span></div>`).join('');
+    $('warnings').classList.toggle('hidden',!p.warnings.length);$('warnings').textContent=p.warnings.length?`Warnings:\n• ${p.warnings.join('\n• ')}`:'';
+    $('quarantine').classList.toggle('hidden',!p.quarantine.length);$('quarantine').textContent=p.quarantine.length?`Quarantined (not silently discarded):\n${p.quarantine.map(x=>`• ${x.field}${x.index==null?'':`[${x.index}]`}: ${x.reason}`).join('\n')}`:'';
+    setStatus('sourceStatus',`Source ready: ${p.sourceType}. Fingerprint: ${p.sourceFingerprint}`,'good');
+    setStatus('result','Preview ready. No records have been written yet.');updateButtons();
+  }
+  async function makePreview(){try{setStatus('sourceStatus','Validating source…');const p=await prepareMigration(source);renderPreview(p);const check=await inspectMigration(p);if(check.alreadyMigrated)setStatus('result','This exact source was already migrated. A second import will be skipped.','warn');else setStatus('result',`Destination checked. Existing record counts: ${JSON.stringify(check.existingCounts)}`);}catch(e){preview=null;setStatus('sourceStatus',e.message,'bad');updateButtons();}}
+  $('capture').addEventListener('click',()=>{try{source=readLegacyLocalStorageSnapshot(localStorage);$('confirm').checked=false;$('allowBad').checked=false;makePreview();}catch(e){setStatus('sourceStatus',e.message,'bad');}});
+  $('file').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;if(f.size>10*1024*1024){setStatus('sourceStatus','File exceeds the 10 MB safety limit.','bad');return;}try{source=JSON.parse(await f.text());$('confirm').checked=false;$('allowBad').checked=false;await makePreview();}catch(err){setStatus('sourceStatus',`Could not read JSON: ${err.message}`,'bad');}});
+  $('preview').addEventListener('click',makePreview);
+  $('confirm').addEventListener('change',updateButtons);$('allowBad').addEventListener('change',updateButtons);
+  $('download').addEventListener('click',()=>{if(!source)return;const safe=redactLegacySecrets(source);const blob=new Blob([JSON.stringify(safe,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='aurafit-legacy-snapshot-redacted.json';a.click();URL.revokeObjectURL(url);});
+  $('commit').addEventListener('click',async()=>{if(!preview)return; $('commit').disabled=true;try{const result=await commitMigration(preview,{confirmed:true,allowQuarantined:$('allowBad').checked});setStatus('result',result.status==='already-migrated'?'This source was already migrated; no duplicate import was performed.':`Migration completed.\nImported counts: ${JSON.stringify(result.run.counts)}\nCompleted: ${result.run.completedAt}\nLegacy LocalStorage was not changed.`,'good');}catch(e){setStatus('result',`Migration failed; the transaction was aborted.\n${e.message}\nOriginal LocalStorage remains untouched.`,'bad');}finally{updateButtons();}});
+</script></body></html>

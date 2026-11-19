@@ -1,0 +1,25 @@
+{
+  "project": "AuraFit AI Ultra",
+  "phase": 3,
+  "release": "3.0.0-phase3-ui",
+  "design": "premium-dark-purple-blue-responsive-web",
+  "storage": {"engine": "IndexedDB", "database": "aurafit_ultra_local", "schemaVersion": 1},
+  "legacySource": {
+    "file": "aurafit_app2.html",
+    "sha256": "11b0e5ebbdd2606c5489915a83c644a9a21a4de0fba4a79d301399e958bb618c",
+    "modified": false
+  },
+  "features": ["overview-dashboard", "routine-crud", "weight-tracker", "weight-chart", "hydration-tracker", "bengali-english", "profile-goals", "secure-backup-export", "migration-console-link", "privacy-settings"],
+  "security": {
+    "legacyLocalStorageWrites": false,
+    "geminiApiKeyInBrowser": false,
+    "automaticCloudSync": false,
+    "geminiProxy": "not-configured"
+  },
+  "knownLimitations": ["PWA manifest/service worker not included", "background alarms not included", "Gemini backend proxy not included", "real browser IndexedDB acceptance test pending"],
+  "files": [
+    "aurafit-ultra.html", "aurafit-ultra.css", "aurafit-ultra-app.js",
+    "aurafit-ultra-data-layer.js", "aurafit-migration-engine.js", "migration-console.html",
+    "PHASE2_IMPLEMENTATION.md", "PHASE2_TEST_REPORT.md", "PHASE3_IMPLEMENTATION.md", "PHASE3_TEST_REPORT.md", "PHASE3_MANIFEST.json", "test-phase2.mjs", "package.json"
+  ]
+}

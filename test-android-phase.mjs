@@ -1,0 +1,7 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
+const read=p=>fs.readFileSync(p,'utf8');
+test('Capacitor config targets Android and public web assets',()=>{const c=JSON.parse(read('capacitor.config.json'));assert.equal(c.appId,'com.aurafit.aiultra');assert.equal(c.webDir,'public');});
+test('Supabase schema enables RLS and scopes all records to auth user',()=>{const s=read('supabase-schema.sql');assert.match(s,/enable row level security/i);assert.match(s,/auth\.uid\(\) = user_id/i);});
+test('Cloud sync excludes migration archives and internal caches',()=>{const s=read('public/aurafit-cloud.js');assert.match(s,/legacy_snapshots.*migration_runs.*ai_cache.*app_cache/);assert.match(s,/signInWithPassword/);assert.match(s,/syncCloud/);});
+test('Phase 8 reconstructed UI and consent gate exist',()=>{const h=read('public/aurafit-ultra.html'),j=read('public/aurafit-phase8.js');assert.match(h,/page-phase8/);assert.match(j,/p8Consent/);assert.match(j,/phase8_checkin_/);});
+test('No Supabase service-role or Gemini secret is embedded',()=>{for(const p of ['public/aurafit-config.js','public/aurafit-cloud.js','public/aurafit-android.js'])assert.doesNotMatch(read(p),/service_role|GEMINI_API_KEY\s*[:=]/i);});

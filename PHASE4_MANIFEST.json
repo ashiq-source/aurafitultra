@@ -1,0 +1,13 @@
+{
+  "project": "AuraFit AI Ultra",
+  "phase": 4,
+  "release": "4.0.0-phase4-pwa-gemini",
+  "design": "premium-dark-purple-blue-responsive-web",
+  "storage": {"engine": "IndexedDB", "database": "aurafit_ultra_local", "schemaVersion": 1, "localFirst": true},
+  "pwa": {"manifest": "manifest.webmanifest", "serviceWorker": "service-worker.js", "offlineShell": true, "pushNotifications": false},
+  "ai": {"provider": "Google Gemini", "backend": "Node.js Express", "endpoint": "/api/ai/generate", "secretStorage": "server environment only", "perRequestConsent": true, "optionalContext": true, "historyStore": "ai_history"},
+  "security": {"apiKeyInBrowser": false, "requestRateLimit": true, "payloadLimit": "20kb", "promptLimit": 6000, "timeoutMs": 35000, "helmet": true, "originAllowlist": true},
+  "legacySource": {"file": "aurafit_app2.html", "modified": false, "legacyLocalStorageCleared": false},
+  "knownLimitations": ["Live Gemini request requires user-configured server secret", "No guaranteed reminders after browser/app closure", "No web-push subscription service", "Unauthenticated backend requires additional abuse controls before broad public exposure", "npm dependency installation and server runtime need verification on deployment host"],
+  "files": ["server.js", "package.json", ".env.example", "Dockerfile", "README_PHASE4.md", "PHASE4_IMPLEMENTATION.md", "PHASE4_TEST_REPORT.md", "PHASE4_MANIFEST.json", "aurafit-ultra.html", "aurafit-ultra.css", "aurafit-ultra-app.js", "aurafit-ultra-data-layer.js", "aurafit-migration-engine.js", "migration-console.html", "manifest.webmanifest", "service-worker.js", "icons/icon.svg", "test-phase2.mjs", "test-phase4.mjs", "public/"]
+}

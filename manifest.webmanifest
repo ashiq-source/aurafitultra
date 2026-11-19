@@ -1,0 +1,14 @@
+{
+  "id": "/aurafit-ultra.html",
+  "name": "AuraFit AI Ultra",
+  "short_name": "AuraFit",
+  "description": "A private, local-first wellness companion.",
+  "start_url": "./aurafit-ultra.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0b0920",
+  "theme_color": "#0b0920",
+  "lang": "en",
+  "icons": [{"src":"./icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
