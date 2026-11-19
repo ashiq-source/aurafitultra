@@ -23,7 +23,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -63,7 +62,7 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon assembleDebug bundleRelease
+          ./gradlew --no-daemon assembleDebug assembleRelease bundleRelease
 
       - name: Upload Android build files
         uses: actions/upload-artifact@v4
@@ -72,4 +71,5 @@ jobs:
           if-no-files-found: error
           path: |
             android/app/build/outputs/apk/debug/app-debug.apk
+            android/app/build/outputs/apk/release/app-release-unsigned.apk
             android/app/build/outputs/bundle/release/app-release.aab
