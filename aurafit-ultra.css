@@ -16,3 +16,30 @@
 @media(max-width:1000px){.p7-grid{grid-template-columns:1fr}.p7-week{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:600px){.p7-week{grid-template-columns:repeat(2,minmax(0,1fr))}.p7-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.p7-achievements{grid-template-columns:1fr}.p7-idea,.p7-log{align-items:flex-start;flex-direction:column}.p7-idea>span,.p7-log>span{text-align:left}}
 @media print{body *{visibility:hidden!important}#page-phase7,#page-phase7 *{visibility:visible!important}#page-phase7{display:block!important;position:absolute!important;inset:0!important;width:100%!important;background:#fff!important;color:#111!important;padding:18px!important}#page-phase7 .panel,#page-phase7 .p7-day,#page-phase7 .p7-achievement,#page-phase7 .p7-kpis>div{background:#fff!important;color:#111!important;border:1px solid #bbb!important;box-shadow:none!important}#page-phase7 .muted,#page-phase7 small,#page-phase7 .fine-print{color:#444!important}#page-phase7 button,#page-phase7 form,#page-phase7 .p7-export,#page-phase7 .p7-check{display:none!important}.p7-grid{break-inside:avoid}}
+
+
+/* Android readability pass: larger type, clearer controls and touch targets */
+@media(max-width:760px){
+  body{font-size:16px;line-height:1.58}
+  .welcome-row p,.page-heading p,.hero-card p,.muted{font-size:14px;line-height:1.55}
+  .eyebrow,.side-label{font-size:11px;letter-spacing:.12em}
+  .fine-print{font-size:12px;line-height:1.6}
+  .nav-item{font-size:14px}
+  .primary-btn,.secondary-btn,.text-btn,.icon-btn{font-size:14px;min-height:44px;padding:11px 14px}
+  .panel h3,.section-heading h2{font-size:17px}
+  .form-grid label,.field,.settings-row p{font-size:14px}
+  .form-grid input,.field input,.field select,.field textarea{font-size:16px;min-height:46px}
+  .stat-label{font-size:10px}
+  .stat-foot{font-size:10px}
+  .stat-value strong{font-size:26px}
+  .privacy-chip{font-size:12px}
+  .mobile-nav{justify-content:flex-start;gap:4px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none}
+  .mobile-nav::-webkit-scrollbar{display:none}
+  .mobile-nav button{flex:0 0 48px;min-width:48px;min-height:48px}
+  .mobile-nav button span{font-size:19px}
+  .mobile-nav button small{font-size:9px}
+  .ai-tool b{font-size:13px}
+  .ai-tool small{font-size:11px}
+  .water-add b{font-size:16px}
+  .water-add small{font-size:11px}
+}
