@@ -57,7 +57,7 @@ async function syncNativeRoutineNotifications(){
   const pending=await LocalNotifications.getPending();
   const oldIds=pending.notifications.filter(n=>n.id>=ROUTINE_NOTIFICATION_BASE&&n.id<ROUTINE_NOTIFICATION_BASE+ROUTINE_NOTIFICATION_RANGE).map(n=>({id:n.id}));
   if(oldIds.length)await LocalNotifications.cancel({notifications:oldIds});
-  const notifications=routines.filter(r=>r.enabled!==false&&/^([01]\\d|2[0-3]):[0-5]\\d$/.test(String(r.time||''))).map(r=>{
+  const notifications=routines.filter(r=>r.enabled!==false&&/^([01]\d|2[0-3]):[0-5]\d$/.test(String(r.time||''))).map(r=>{
     const [hour,minute]=r.time.split(':').map(Number);
     return {id:routineNotificationId(r),...routineNotificationText(r),schedule:{on:{hour,minute},allowWhileIdle:true},channelId:'aurafit-routines',extra:{routineId:String(r.id)}};
   });
