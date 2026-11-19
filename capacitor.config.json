@@ -3,9 +3,19 @@
   "appName": "AuraFit AI Ultra",
   "webDir": "public",
   "bundledWebRuntime": false,
-  "server": { "androidScheme": "https" },
+  "server": {
+    "androidScheme": "https"
+  },
   "plugins": {
-    "SplashScreen": { "launchShowDuration": 1800, "backgroundColor": "#0b0920", "showSpinner": false },
-    "StatusBar": { "style": "DARK", "backgroundColor": "#0b0920" }
+    "SplashScreen": {
+      "launchShowDuration": 1800,
+      "backgroundColor": "#0b0920",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "LIGHT",
+      "backgroundColor": "#0b0920",
+      "overlaysWebView": false
+    }
   }
 }
