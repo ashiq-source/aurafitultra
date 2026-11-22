@@ -3,6 +3,7 @@ import { build } from 'esbuild';
 const result = await build({
   entryPoints: {
     'aurafit-cloud': 'aurafit-cloud.js',
+    'aurafit-gemini': 'aurafit-gemini.js',
     'aurafit-android': 'aurafit-android.js',
     'aurafit-ultra-app': 'aurafit-ultra-app.js'
   },
@@ -22,6 +23,7 @@ const result = await build({
 const outputs = Object.keys(result.metafile.outputs);
 for (const required of [
   'public/bundles/aurafit-cloud.js',
+  'public/bundles/aurafit-gemini.js',
   'public/bundles/aurafit-android.js',
   'public/bundles/aurafit-ultra-app.js'
 ]) {
