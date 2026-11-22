@@ -5,7 +5,7 @@ const get = f => readFile(new URL(f, import.meta.url), 'utf8');
 test('PWA manifest and worker exist with expected scope', async()=>{
  const manifest=JSON.parse(await get('./manifest.webmanifest'));
  assert.equal(manifest.name,'AuraFit AI Ultra');assert.equal(manifest.display,'standalone');
- const sw=await get('./service-worker.js');assert.match(sw,/aurafit-ultra-v8-android-shell/);assert.match(sw,/\/api\//);
+ const sw=await get('./service-worker.js');assert.match(sw,/aurafit-ultra-v9-bundled-android/);assert.match(sw,/\/api\//);
 });
 test('Gemini credentials and provider endpoint are absent from frontend', async()=>{
  for(const f of ['./aurafit-ultra.html','./aurafit-ultra-app.js','./aurafit-ultra.css','./service-worker.js']){
