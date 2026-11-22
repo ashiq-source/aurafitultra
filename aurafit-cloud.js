@@ -19,11 +19,17 @@ export function getCloudClient(){
 }
 const oauthRedirect=()=>Capacitor.isNativePlatform()?nativeRedirect:(location.origin+location.pathname);
 async function captureOAuthCallback(url){
- if(!url||!url.includes('code='))return false;
+ if(!url)return false;
+ const callback=new URL(url);
+ const oauthError=callback.searchParams.get('error_description')||callback.searchParams.get('error');
+ if(oauthError)throw new Error(decodeURIComponent(oauthError.replace(/\\+/g,' ')));
+ const code=callback.searchParams.get('code');
+ if(!code)return false;
  const {data,error}=await getCloudClient().auth.exchangeCodeForSession(url);
  if(error)throw error;
  googleAccessToken=data?.session?.provider_token||googleAccessToken;
- status('Google account connected. You can now sync AuraFit and back up to Drive.');
+ status('Google account connected · '+(data?.session?.user?.email||'signed in')+'.');
+ try{await Browser.close();}catch{}
  return true;
 }
 export async function initCloudAuth(){
@@ -40,12 +46,18 @@ export async function initCloudAuth(){
  else status('Not signed in. Use Continue with Google or email/password to enable private cloud sync.');
  return session;
 }
-export async function googleSignIn(){
+async function startGoogleOAuth(scopes, prompt='select_account'){
  const native=Capacitor.isNativePlatform();
- const {data,error}=await getCloudClient().auth.signInWithOAuth({provider:'google',options:{redirectTo:oauthRedirect(),skipBrowserRedirect:native,scopes:'openid email profile https://www.googleapis.com/auth/drive.file',queryParams:{access_type:'offline',prompt:'consent'}}});
+ const {data,error}=await getCloudClient().auth.signInWithOAuth({provider:'google',options:{redirectTo:oauthRedirect(),skipBrowserRedirect:native,scopes,queryParams:{access_type:'offline',prompt}}});
  if(error)throw error;
  if(native&&data?.url)await Browser.open({url:data.url});
  return data;
+}
+export async function googleSignIn(){
+ return startGoogleOAuth('openid email profile','select_account');
+}
+export async function googleDriveSignIn(){
+ return startGoogleOAuth('openid email profile https://www.googleapis.com/auth/drive.file','consent');
 }
 export async function cloudSignIn(email,password){const {data,error}=await getCloudClient().auth.signInWithPassword({email,password});if(error)throw error;return data;}
 export async function cloudSignUp(email,password){const {data,error}=await getCloudClient().auth.signUp({email,password});if(error)throw error;return data;}
@@ -94,5 +106,5 @@ export async function restoreFromGoogleDrive(){
  try{for(const store of stores){const rows=backup.data[store];if(!Array.isArray(rows)||!STORES[store])continue;await writeRows(db,store,rows);restored+=rows.length;}}finally{db.close();}
  status('Restored '+restored+' records from '+file.name+'. Existing matching records were updated; unrelated local records were kept.');return {restored,file};
 }
-window.AuraFitCloud={cloudConfigured,initCloudAuth,googleSignIn,cloudSignIn,cloudSignUp,cloudSignOut,syncCloud,backupToGoogleDrive,restoreFromGoogleDrive};
+window.AuraFitCloud={cloudConfigured,initCloudAuth,googleSignIn,googleDriveSignIn,cloudSignIn,cloudSignUp,cloudSignOut,syncCloud,backupToGoogleDrive,restoreFromGoogleDrive};
 initCloudAuth().catch(e=>status('Cloud setup: '+e.message));
