@@ -25,7 +25,7 @@ async function captureOAuthCallback(url){
  if(oauthError)throw new Error(oauthError);
  const code=callback.searchParams.get('code');
  if(!code)return false;
- const {data,error}=await getCloudClient().auth.exchangeCodeForSession(url);
+ const {data,error}=await getCloudClient().auth.exchangeCodeForSession(code);
  if(error)throw error;
  googleAccessToken=data?.session?.provider_token||googleAccessToken;
  status('Google account connected · '+(data?.session?.user?.email||'signed in')+'.');
