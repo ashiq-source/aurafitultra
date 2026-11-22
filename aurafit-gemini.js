@@ -36,6 +36,8 @@ export async function saveGeminiApiKey(value) {
   assertAndroidSecureStorage();
   const key = cleanKey(value);
   await SecureStoragePlugin.set({ key: STORAGE_KEY, value: key });
+  const verified = await getGeminiApiKey();
+  if (verified !== key) throw new Error('The API Key could not be verified after saving. Check Android secure storage permissions and try again.');
   return true;
 }
 
