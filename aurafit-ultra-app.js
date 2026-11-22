@@ -142,7 +142,6 @@ async function runCloudAction(buttonId, action, busyText) {
     if (status) status.textContent = 'Cloud module is not loaded. Please restart the app and try again.';
     return;
   }
-  const original = button.textContent;
   button.disabled = true;
   button.setAttribute('aria-busy', 'true');
   if (status) status.textContent = busyText;
@@ -159,7 +158,6 @@ async function runCloudAction(buttonId, action, busyText) {
   } finally {
     button.disabled = false;
     button.removeAttribute('aria-busy');
-    button.textContent = original;
   }
 }
 function bindCloudActions() {
