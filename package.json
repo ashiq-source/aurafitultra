@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "check": "node --check server.js && node --check aurafit-ultra-app.js && node --check aurafit-phase5.js && node --check aurafit-phase6.js && node --check aurafit-phase7.js && node --check aurafit-ultra-data-layer.js && node --check aurafit-migration-engine.js && node --check aurafit-phase8.js && node --check aurafit-cloud.js && node --check aurafit-android.js",
+    "check": "node --check server.js && node --check aurafit-ultra-app.js && node --check aurafit-phase5.js && node --check aurafit-phase6.js && node --check aurafit-phase7.js && node --check aurafit-ultra-data-layer.js && node --check aurafit-migration-engine.js && node --check aurafit-phase8.js && node --check aurafit-cloud.js && node --check aurafit-android.js && node --check aurafit-gemini.js",
     "test": "node --test test-phase*.mjs test-android-phase.mjs",
     "android:sync": "cap sync android",
     "android:open": "cap open android",
