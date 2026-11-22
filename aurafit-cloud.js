@@ -1,8 +1,8 @@
 /* AuraFit AI Ultra — private Supabase sync + Google Drive backup. */
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { Capacitor } from 'https://esm.sh/@capacitor/core@7';
-import { App } from 'https://esm.sh/@capacitor/app@7';
-import { Browser } from 'https://esm.sh/@capacitor/browser@7';
+import { createClient } from '@supabase/supabase-js';
+import { Capacitor } from '@capacitor/core';
+import { App } from '@capacitor/app';
+import { Browser } from '@capacitor/browser';
 import { openAuraFitDB, STORES } from './aurafit-ultra-data-layer.js';
 const cfg=window.AURAFIT_CONFIG||{};
 const status=m=>{const el=document.getElementById('cloudSyncStatus');if(el)el.textContent=m;};
