@@ -45,6 +45,9 @@ jobs:
           cp manifest.webmanifest service-worker.js migration-console.html public/
           cp icons/icon.svg public/icons/icon.svg
 
+      - name: Bundle browser JavaScript for Android WebView
+        run: npm run build:android:web
+
       - name: Run syntax checks
         run: npm run check
 
