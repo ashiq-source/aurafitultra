@@ -305,3 +305,45 @@ button:focus-visible {
     transition-duration: .01ms !important;
   }
 }
+
+
+/* Mobile left-side feature drawer */
+.sidebar-backdrop{display:none}
+.menu-toggle{display:none}
+@media(max-width:760px){
+  .sidebar{
+    display:flex;
+    width:min(310px,86vw);
+    padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));
+    transform:translateX(-105%);
+    transition:transform .24s ease;
+    box-shadow:18px 0 50px #0009;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    z-index:42;
+  }
+  .sidebar.open{transform:translateX(0)}
+  .sidebar .side-label{margin-top:28px}
+  .sidebar-backdrop{
+    display:block;
+    position:fixed;
+    inset:0;
+    z-index:41;
+    border:0;
+    border-radius:0;
+    padding:0;
+    background:#050411b8;
+    opacity:0;
+    visibility:hidden;
+    transition:opacity .2s ease,visibility .2s ease;
+  }
+  .sidebar-backdrop.show{opacity:1;visibility:visible}
+  .menu-toggle{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;margin-right:10px}
+  .topbar{justify-content:flex-start}
+  .mobile-brand{margin-right:auto}
+  .mobile-nav{display:none!important}
+}
+.gemini-key-input{display:flex;align-items:stretch;gap:8px;width:100%}
+.gemini-key-input input{flex:1;min-width:0}
+.gemini-key-input button{flex:0 0 68px;min-height:46px}
+@media(prefers-reduced-motion:reduce){.sidebar,.sidebar-backdrop{transition:none}}
