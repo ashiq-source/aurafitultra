@@ -162,3 +162,146 @@
 .drive-actions>div:first-child{display:grid;gap:4px;margin-bottom:12px}
 .drive-actions b{font-size:12px}.drive-actions small{font-size:10px;color:var(--muted)}
 @media(max-width:600px){#page-phase7 .p7-kpis b{font-size:20px}.google-login-btn{font-size:14px}.drive-actions .data-actions{display:grid;grid-template-columns:1fr 1fr}}
+
+
+/* AuraFit mobile-first interaction and touch-target upgrade */
+button,
+[role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 3px solid #8bcfff;
+  outline-offset: 3px;
+}
+button:active,
+[role="button"]:active {
+  transform: scale(.97);
+  filter: brightness(1.12);
+}
+button:disabled,
+button[aria-disabled="true"] {
+  opacity: .55;
+  cursor: not-allowed;
+  transform: none;
+}
+.primary-btn,
+.secondary-btn {
+  min-height: 48px;
+  padding: 13px 20px;
+  font-size: 13px;
+  border-radius: 14px;
+}
+.icon-btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 10px 13px;
+  font-size: 13px;
+}
+.avatar {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  font-size: 13px;
+}
+.nav-item {
+  min-height: 48px;
+  padding: 13px 15px;
+  font-size: 13px;
+}
+.round-arrow {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  font-size: 18px;
+}
+.tiny-btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 9px 12px;
+  font-size: 12px;
+  border-radius: 11px;
+}
+.toggle {
+  width: 48px;
+  height: 28px;
+  padding: 3px;
+}
+.toggle:after {
+  width: 22px;
+  height: 22px;
+}
+.toggle.on:after {
+  transform: translateX(20px);
+}
+.water-add {
+  min-height: 76px;
+  padding: 14px 8px;
+  border-radius: 16px;
+}
+.water-add b {
+  font-size: 17px;
+}
+.water-add small {
+  font-size: 11px;
+}
+.text-btn,
+.link-btn {
+  min-height: 44px;
+  padding: 10px 12px;
+}
+.data-actions > button,
+.data-actions > a {
+  min-height: 48px;
+}
+button,
+.nav-item,
+.water-add,
+.tiny-btn,
+.round-arrow,
+.icon-btn {
+  transition: background-color .18s ease, border-color .18s ease,
+    box-shadow .18s ease, transform .14s ease, filter .18s ease;
+}
+button:hover:not(:disabled) {
+  box-shadow: 0 7px 22px #07051c55;
+}
+button:focus-visible {
+  box-shadow: 0 0 0 4px #8bcfff30;
+}
+@media (max-width: 760px) {
+  .primary-btn,
+  .secondary-btn {
+    min-height: 52px;
+    padding: 14px 17px;
+    font-size: 14px;
+  }
+  .page-heading .primary-btn {
+    min-height: 48px;
+    padding: 12px 14px;
+    font-size: 12px;
+  }
+  .water-actions {
+    gap: 12px;
+  }
+  .water-add {
+    min-height: 82px;
+  }
+  .row-actions {
+    gap: 8px;
+  }
+  .routine-row,
+  .history-row {
+    gap: 10px;
+    padding: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
