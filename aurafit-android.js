@@ -1,4 +1,4 @@
-import { Capacitor } from 'https://esm.sh/@capacitor/core@7';
+import { Capacitor } from '@capacitor/core';
 const $=id=>document.getElementById(id);
 const status=m=>{const el=$('cloudSyncStatus');if(el)el.textContent=m;};
 const actions=[
