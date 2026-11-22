@@ -22,7 +22,7 @@ async function captureOAuthCallback(url){
  if(!url)return false;
  const callback=new URL(url);
  const oauthError=callback.searchParams.get('error_description')||callback.searchParams.get('error');
- if(oauthError)throw new Error(decodeURIComponent(oauthError.replace(/\\+/g,' ')));
+ if(oauthError)throw new Error(oauthError);
  const code=callback.searchParams.get('code');
  if(!code)return false;
  const {data,error}=await getCloudClient().auth.exchangeCodeForSession(url);
