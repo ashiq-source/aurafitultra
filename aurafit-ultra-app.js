@@ -21,7 +21,7 @@ Object.assign(translations.bn,{aiConsentTitle:'এই অনুরোধের �
 const t = key => translations[lang][key] ?? translations.en[key] ?? key;
 function toast(message){const el=$('toast');el.textContent=message;el.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove('show'),2300);}
 function setLang(next){lang=next==='bn'?'bn':'en';document.documentElement.lang=lang;document.querySelectorAll('[data-i18n]').forEach(el=>{const val=t(el.dataset.i18n);if(val.includes('<br>'))el.innerHTML=val;else el.textContent=val;});$('langToggle').textContent=lang==='en'?'বাংলা':'English';$('todayLabel').textContent=new Intl.DateTimeFormat(lang==='bn'?'bn-BD':'en-US',{weekday:'short',day:'numeric',month:'short'}).format(new Date());$('datePill').textContent=new Intl.DateTimeFormat(lang==='bn'?'bn-BD':'en-US',{day:'numeric',month:'long'}).format(new Date()).toUpperCase();renderAll();}
-function go(next){page=next;document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===`page-${next}`));document.querySelectorAll('[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===next));window.scrollTo({top:0,behavior:'smooth'});}
+function go(next){closeSideMenu();page=next;document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===`page-${next}`));document.querySelectorAll('[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===next));window.scrollTo({top:0,behavior:'smooth'});}
 async function loadAll(){[profile,routines,weights]=await Promise.all([store.get('profile','primary'),store.getAll('daily_routines'),store.getAll('weight_logs')]);profile=profile||{id:'primary'};routines.sort((a,b)=>(a.time||'').localeCompare(b.time||''));weights.sort((a,b)=>(a.dateISO||a.legacyDate||'').localeCompare(b.dateISO||b.legacyDate||''));const settings=await store.getAll('settings');for(const s of settings){if(s.key==='language')lang=s.value;if(s.key==='waterGoal')waterGoal=Number(s.value)||3500;}const today=await store.get('daily_water_totals',todayISO());waterDate=today?.dateISO||todayISO();waterToday=today?.totalMl||0;const oldUnknown=(await store.getAll('daily_water_totals')).find(x=>x.datePrecision==='unknown'&&x.source==='legacy');if(!today&&oldUnknown){waterToday=oldUnknown.totalMl;waterDate=oldUnknown.dateISO;}setLang(lang);$('dbStatus').textContent=t('dbReady');}
 function renderAll(){renderHome();renderRoutines();renderWeight();renderWater();renderSettings();}
 function renderHome(){const latest=weights.at(-1);$('homeWeight').textContent=latest?Number(latest.weightKg).toFixed(1):'—';$('homeWeightFoot').textContent=latest?fmtDate(latest.dateISO||latest.legacyDate,lang):t('addFirstWeight');$('homeWater').textContent=waterToday.toLocaleString(lang==='bn'?'bn-BD':'en-US');const pct=Math.min(100,Math.round(waterToday/waterGoal*100));$('homeWaterBar').style.width=`${pct}%`;$('homeWaterFoot').textContent=`${pct}% ${lang==='bn'?'দৈনিক লক্ষ্যের':'of daily goal'}`;$('homeRoutine').textContent=routines.filter(x=>x.enabled!==false).length;const now=new Date();const upcoming=routines.filter(x=>x.enabled!==false&&x.time>=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`).sort((a,b)=>a.time.localeCompare(b.time))[0]||routines.find(x=>x.enabled!==false);$('nextReminder').innerHTML=upcoming?`<div class="empty-icon">◷</div><div><b>${escapeHTML(upcoming.time)}</b><div>${escapeHTML(lang==='bn'?(upcoming.title||upcoming.title_en):(upcoming.title_en||upcoming.title))}</div><small>${escapeHTML(lang==='bn'?(upcoming.desc||''):(upcoming.desc_en||upcoming.desc||''))}</small></div>`:`<div class="empty-icon">◷</div><p>${escapeHTML(t('noReminders'))}</p>`;}
@@ -133,5 +133,80 @@ async function seedFreshInstall(){const [existing,imports]=await Promise.all([st
 {id:'starter-7',time:'21:30',title:'রাতের খাবার',title_en:'Evening meal',desc:'সময় নিয়ে রাতের খাবার খান।',desc_en:'Make time for your evening meal.',enabled:true},
 {id:'starter-8',time:'22:15',title:'ঘুমের প্রস্তুতি',title_en:'Wind-down routine',desc:'ঘুমের আগে স্ক্রিন থেকে বিরতি নিন।',desc_en:'Take a screen break before sleep.',enabled:true}
 ];for(const row of rows)await store.put('daily_routines',{...row,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),schemaVersion:1,source:'starter-template'});}
-async function boot(){try{store=await AuraFitStore.open();await seedFreshInstall();await loadAll();await setupPWA();await checkAIService();}catch(err){$('dbStatus').textContent=t('dbError')+err.message;$('dbStatus').style.color='#ff9aa8';throw err;}}
-document.addEventListener('click',e=>{const ai=e.target.closest('[data-ai-task]');if(ai){const task=ai.dataset.aiTask;callGemini(taskPrompts[task],task);return;}handleClick(e).catch(err=>toast(err.message));});$('aiChatForm').addEventListener('submit',e=>{e.preventDefault();const prompt=$('aiPrompt').value.trim();if(!prompt)return;$('aiPrompt').value='';callGemini(prompt,'chat');});$('saveGeminiKey')?.addEventListener('click',async()=>{const button=$('saveGeminiKey');button.disabled=true;try{await window.AuraFitGemini.saveApiKey($('geminiApiKey').value);$('geminiApiKey').value='';$('geminiKeyStatus').textContent='Key status: encrypted and saved on this Android device.';toast('Gemini API Key saved securely.');await checkAIService();}catch(error){$('geminiKeyStatus').textContent=error.message;toast(error.message);}finally{button.disabled=false;}});$('testGeminiKey')?.addEventListener('click',async()=>{const button=$('testGeminiKey');button.disabled=true;try{$('geminiKeyStatus').textContent='Testing Gemini connection…';const result=await window.AuraFitGemini.generate({prompt:'Reply with exactly: AuraFit connection OK.',task:'chat',language:'English'});$('geminiKeyStatus').textContent='Connection successful · '+result.model;toast('Gemini connection successful.');await checkAIService();}catch(error){$('geminiKeyStatus').textContent='Connection failed: '+error.message;toast(error.message);}finally{button.disabled=false;}});$('removeGeminiKey')?.addEventListener('click',async()=>{const button=$('removeGeminiKey');button.disabled=true;try{await window.AuraFitGemini.removeApiKey();$('geminiApiKey').value='';$('geminiKeyStatus').textContent='Key removed from this device.';toast('Gemini API Key removed.');await checkAIService();}catch(error){$('geminiKeyStatus').textContent=error.message;toast(error.message);}finally{button.disabled=false;}});$('enableNotifications').addEventListener('click',()=>requestNotifications().catch(e=>toast(e.message)));$('installApp').addEventListener('click',installPWA);$('langToggle').addEventListener('click',()=>{setLang(lang==='en'?'bn':'en');store.put('settings',{key:'language',value:lang,updatedAt:new Date().toISOString()}).catch(()=>{});if(isNativeAndroid())syncNativeRoutineNotifications().catch(e=>console.warn('Could not refresh notification language',e));});$('addRoutineBtn').addEventListener('click',()=>openModal('routine'));$('addWeightBtn').addEventListener('click',()=>openModal('weight'));$('customWaterBtn').addEventListener('click',()=>openModal('water'));$('closeModal').addEventListener('click',closeModal);$('cancelModal').addEventListener('click',closeModal);$('modalBackdrop').addEventListener('click',e=>{if(e.target===$('modalBackdrop'))closeModal();});$('recordForm').addEventListener('submit',submitForm);$('saveSettings').addEventListener('click',saveSettings);$('exportBackup').addEventListener('click',()=>exportBackup().catch(err=>toast(err.message)));$('refreshData').addEventListener('click',()=>loadAll().then(()=>toast(t('saved'))).catch(err=>toast(err.message)));window.__AURAFIT_DIAG__?.('বাটনের event listener যুক্ত হয়েছে');boot().then(()=>window.__AURAFIT_DIAG__?.('অ্যাপ প্রস্তুত; এখন বাটন পরীক্ষা করুন')).catch(err=>{window.__AURAFIT_DIAG__?.('অ্যাপ চালুর সমস্যা: '+(err?.message||String(err)),true);toast(err.message);});
+async function boot(){try{bindCloudActions();store=await AuraFitStore.open();await seedFreshInstall();await loadAll();await setupPWA();await checkAIService();}catch(err){$('dbStatus').textContent=t('dbError')+err.message;$('dbStatus').style.color='#ff9aa8';throw err;}}
+document.addEventListener('click',e=>{const ai=e.target.closest('[data-ai-task]');if(ai){const task=ai.dataset.aiTask;callGemini(taskPrompts[task],task);return;}handleClick(e).catch(err=>toast(err.message));});
+async function runCloudAction(buttonId, action, busyText) {
+  const button = $(buttonId);
+  const status = $('cloudSyncStatus');
+  if (!button || !window.AuraFitCloud) {
+    if (status) status.textContent = 'Cloud module is not loaded. Please restart the app and try again.';
+    return;
+  }
+  const original = button.textContent;
+  button.disabled = true;
+  button.setAttribute('aria-busy', 'true');
+  if (status) status.textContent = busyText;
+  try {
+    const result = await action();
+    if (status && result?.user?.email) status.textContent = 'Signed in as ' + result.user.email + '. Your cloud account is ready.';
+    else if (status && result?.session?.user?.email) status.textContent = 'Signed in as ' + result.session.user.email + '. Your cloud account is ready.';
+    else if (status && typeof result?.pushed === 'number') status.textContent = 'Cloud sync complete · ' + result.pushed + ' uploaded · ' + result.pulled + ' downloaded.';
+    else if (status && result?.name) status.textContent = 'Google Drive backup saved: ' + result.name;
+    return result;
+  } catch (error) {
+    if (status) status.textContent = 'Action failed: ' + (error?.message || String(error));
+    toast(error?.message || 'Cloud action failed.');
+  } finally {
+    button.disabled = false;
+    button.removeAttribute('aria-busy');
+    button.textContent = original;
+  }
+}
+function bindCloudActions() {
+  $('cloudGoogleSignIn')?.addEventListener('click', () => runCloudAction(
+    'cloudGoogleSignIn',
+    () => window.AuraFitCloud.googleSignIn(),
+    'Opening Google sign-in…'
+  ));
+  $('cloudSignIn')?.addEventListener('click', () => runCloudAction(
+    'cloudSignIn',
+    () => window.AuraFitCloud.cloudSignIn($('cloudEmail').value.trim(), $('cloudPassword').value),
+    'Signing in…'
+  ));
+  $('cloudSignUp')?.addEventListener('click', () => runCloudAction(
+    'cloudSignUp',
+    () => window.AuraFitCloud.cloudSignUp($('cloudEmail').value.trim(), $('cloudPassword').value),
+    'Creating your account…'
+  ));
+  $('cloudSignOut')?.addEventListener('click', () => runCloudAction(
+    'cloudSignOut',
+    async () => { await window.AuraFitCloud.cloudSignOut(); return {}; },
+    'Signing out…'
+  ));
+  $('cloudSync')?.addEventListener('click', () => runCloudAction(
+    'cloudSync',
+    () => window.AuraFitCloud.syncCloud(),
+    'Syncing your private records…'
+  ));
+  $('driveConnect')?.addEventListener('click', () => runCloudAction(
+    'driveConnect',
+    () => window.AuraFitCloud.googleDriveSignIn(),
+    'Requesting Google Drive access…'
+  ));
+  $('driveBackup')?.addEventListener('click', () => runCloudAction(
+    'driveBackup',
+    () => window.AuraFitCloud.backupToGoogleDrive(),
+    'Creating your Google Drive backup…'
+  ));
+  $('driveRestore')?.addEventListener('click', () => runCloudAction(
+    'driveRestore',
+    () => window.AuraFitCloud.restoreFromGoogleDrive(),
+    'Finding your latest Google Drive backup…'
+  ));
+}
+function closeSideMenu() {
+  document.querySelector('.sidebar')?.classList.remove('open');
+  $('sidebarBackdrop')?.classList.remove('show');
+  $('menuToggle')?.setAttribute('aria-expanded', 'false');
+}
+\n$('menuToggle')?.addEventListener('click',()=>{const open=!document.querySelector('.sidebar')?.classList.contains('open');document.querySelector('.sidebar')?.classList.toggle('open',open);$('sidebarBackdrop')?.classList.toggle('show',open);$('menuToggle')?.setAttribute('aria-expanded',String(open));});$('sidebarBackdrop')?.addEventListener('click',closeSideMenu);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSideMenu();});$('toggleGeminiKeyVisibility')?.addEventListener('click',()=>{const input=$('geminiApiKey');if(!input)return;const show=input.type==='password';input.type=show?'text':'password';$('toggleGeminiKeyVisibility').textContent=show?'Hide':'Show';$('toggleGeminiKeyVisibility').setAttribute('aria-pressed',String(show));});\n$('aiChatForm').addEventListener('submit',e=>{e.preventDefault();const prompt=$('aiPrompt').value.trim();if(!prompt)return;$('aiPrompt').value='';callGemini(prompt,'chat');});$('saveGeminiKey')?.addEventListener('click',async()=>{const button=$('saveGeminiKey');button.disabled=true;try{await window.AuraFitGemini.saveApiKey($('geminiApiKey').value);$('geminiApiKey').value='';$('geminiKeyStatus').textContent='Key status: encrypted and saved on this Android device.';toast('Gemini API Key saved securely.');await checkAIService();}catch(error){$('geminiKeyStatus').textContent=error.message;toast(error.message);}finally{button.disabled=false;}});$('testGeminiKey')?.addEventListener('click',async()=>{const button=$('testGeminiKey');button.disabled=true;try{$('geminiKeyStatus').textContent='Testing Gemini connection…';const result=await window.AuraFitGemini.generate({prompt:'Reply with exactly: AuraFit connection OK.',task:'chat',language:'English'});$('geminiKeyStatus').textContent='Connection successful · '+result.model;toast('Gemini connection successful.');await checkAIService();}catch(error){$('geminiKeyStatus').textContent='Connection failed: '+error.message;toast(error.message);}finally{button.disabled=false;}});$('removeGeminiKey')?.addEventListener('click',async()=>{const button=$('removeGeminiKey');button.disabled=true;try{await window.AuraFitGemini.removeApiKey();$('geminiApiKey').value='';$('geminiKeyStatus').textContent='Key removed from this device.';toast('Gemini API Key removed.');await checkAIService();}catch(error){$('geminiKeyStatus').textContent=error.message;toast(error.message);}finally{button.disabled=false;}});$('enableNotifications').addEventListener('click',()=>requestNotifications().catch(e=>toast(e.message)));$('installApp').addEventListener('click',installPWA);$('langToggle').addEventListener('click',()=>{setLang(lang==='en'?'bn':'en');store.put('settings',{key:'language',value:lang,updatedAt:new Date().toISOString()}).catch(()=>{});if(isNativeAndroid())syncNativeRoutineNotifications().catch(e=>console.warn('Could not refresh notification language',e));});$('addRoutineBtn').addEventListener('click',()=>openModal('routine'));$('addWeightBtn').addEventListener('click',()=>openModal('weight'));$('customWaterBtn').addEventListener('click',()=>openModal('water'));$('closeModal').addEventListener('click',closeModal);$('cancelModal').addEventListener('click',closeModal);$('modalBackdrop').addEventListener('click',e=>{if(e.target===$('modalBackdrop'))closeModal();});$('recordForm').addEventListener('submit',submitForm);$('saveSettings').addEventListener('click',saveSettings);$('exportBackup').addEventListener('click',()=>exportBackup().catch(err=>toast(err.message)));$('refreshData').addEventListener('click',()=>loadAll().then(()=>toast(t('saved'))).catch(err=>toast(err.message)));window.__AURAFIT_DIAG__?.('বাটনের event listener যুক্ত হয়েছে');boot().then(()=>window.__AURAFIT_DIAG__?.('অ্যাপ প্রস্তুত; এখন বাটন পরীক্ষা করুন')).catch(err=>{window.__AURAFIT_DIAG__?.('অ্যাপ চালুর সমস্যা: '+(err?.message||String(err)),true);toast(err.message);});
