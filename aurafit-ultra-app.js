@@ -148,8 +148,8 @@ async function runCloudAction(buttonId, action, busyText) {
   if (status) status.textContent = busyText;
   try {
     const result = await action();
-    if (status && result?.user?.email) status.textContent = 'Signed in as ' + result.user.email + '. Your cloud account is ready.';
-    else if (status && result?.session?.user?.email) status.textContent = 'Signed in as ' + result.session.user.email + '. Your cloud account is ready.';
+    if (status && result?.session?.user?.email) status.textContent = 'Signed in as ' + result.session.user.email + '. Your cloud account is ready.';
+    else if (status && result?.user?.email) status.textContent = result.session === null ? 'Account created for ' + result.user.email + '. Check your inbox if email confirmation is enabled.' : 'Signed in as ' + result.user.email + '. Your cloud account is ready.';
     else if (status && typeof result?.pushed === 'number') status.textContent = 'Cloud sync complete · ' + result.pushed + ' uploaded · ' + result.pulled + ' downloaded.';
     else if (status && result?.name) status.textContent = 'Google Drive backup saved: ' + result.name;
     return result;
