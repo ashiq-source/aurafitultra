@@ -1,5 +1,6 @@
 import { AuraFitStore } from './aurafit-ultra-data-layer.js';
 import { Capacitor } from '@capacitor/core';
+import { App } from '@capacitor/app';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { StatusBar, Style } from '@capacitor/status-bar';
 
@@ -67,6 +68,23 @@ async function syncNativeRoutineNotifications(){
   if(notifications.length)await LocalNotifications.schedule({notifications});
   return notifications.length;
 }
+async function refreshNativeNotificationStatus(openExactSettings=false){
+  const permission=await LocalNotifications.checkPermissions();
+  if(permission.display!=='granted'){
+    $('notificationStatus').textContent='Notifications are off. Tap Enable notifications, then allow AuraFit notifications in Android Settings.';
+    return 0;
+  }
+  let exact=await LocalNotifications.checkExactNotificationSetting();
+  if(openExactSettings&&exact.exact_alarm!=='granted'){
+    exact=await LocalNotifications.changeExactNotificationSetting();
+    exact=await LocalNotifications.checkExactNotificationSetting();
+  }
+  const count=await syncNativeRoutineNotifications();
+  $('notificationStatus').textContent=exact.exact_alarm==='granted'
+    ? 'Notifications enabled. '+count+' daily routine reminder(s) scheduled.'
+    : 'Notifications enabled, but Alarms & reminders access is off. Reminders may be delayed; enable it in Android Settings → Alarms & reminders.';
+  return count;
+}
 async function setupPWA(){
   if(isNativeAndroid()){
     try{
@@ -82,9 +100,8 @@ async function setupPWA(){
   if(isNativeAndroid()){
     try{
       await LocalNotifications.createChannel({id:'aurafit-routines',name:'AuraFit Routine Reminders',description:'Daily fitness and wellness routine reminders',importance:4,visibility:1,vibration:true});
-      const permission=await LocalNotifications.checkPermissions();
-      $('notificationStatus').textContent=permission.display==='granted'?'Notifications are allowed. Daily routine reminders are ready.':'Tap Enable notifications to allow Android reminders.';
-      if(permission.display==='granted')await syncNativeRoutineNotifications();
+      await refreshNativeNotificationStatus(false);
+      App.addListener('appStateChange',async({isActive})=>{if(isActive){try{await refreshNativeNotificationStatus(false);}catch(e){console.warn('Notification resume check failed',e);}}});
     }catch(e){$('notificationStatus').textContent='Notification setup needs attention: '+e.message;console.warn('Native notification setup failed',e);}
   }else if($('notificationStatus')){
     $('notificationStatus').textContent=('Notification' in window && Notification.permission==='granted')?'Notifications enabled. Keep AuraFit open for routine reminders.':(('Notification' in window && Notification.permission==='denied')?'Notifications blocked. Change permission in browser settings.':'Notifications are optional; browser reminders need the app open.');
@@ -108,9 +125,8 @@ async function requestNotifications(){
       toast('Android notification permission was not granted.');return;
     }
     await LocalNotifications.createChannel({id:'aurafit-routines',name:'AuraFit Routine Reminders',description:'Daily fitness and wellness routine reminders',importance:4,visibility:1,vibration:true});
-    const count=await syncNativeRoutineNotifications();
-    $('notificationStatus').textContent=`Notifications enabled. ${count} daily routine reminder(s) scheduled.`;
-    toast('Android notifications enabled.');
+    const count=await refreshNativeNotificationStatus(true);
+    toast('Android notifications enabled. '+count+' routine reminder(s) scheduled.');
     return;
   }
   if(!('Notification' in window)){toast('This browser does not support notifications.');return;}
