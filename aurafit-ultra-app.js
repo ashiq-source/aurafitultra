@@ -60,6 +60,8 @@ async function syncNativeRoutineNotifications(){
   if(!isNativeAndroid())return;
   if(nativeNotificationSyncPromise)return nativeNotificationSyncPromise;
   nativeNotificationSyncPromise=(async()=>{
+    const permission=await LocalNotifications.checkPermissions();
+    if(permission.display!=='granted')return 0;
     const pending=await LocalNotifications.getPending();
     const oldIds=pending.notifications.filter(n=>n.id>=ROUTINE_NOTIFICATION_BASE&&n.id<ROUTINE_NOTIFICATION_BASE+ROUTINE_NOTIFICATION_RANGE).map(n=>({id:n.id}));
     if(oldIds.length)await LocalNotifications.cancel({notifications:oldIds});
