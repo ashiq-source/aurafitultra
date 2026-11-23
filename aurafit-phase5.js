@@ -41,3 +41,4 @@ const p5Translations={
 };
 function applyP5Language(){const bn=document.documentElement.lang==='bn';document.querySelectorAll('[data-p5-i18n]').forEach(el=>{const v=p5Translations[el.dataset.p5I18n];if(v)el.textContent=v[bn?1:0];});if(foods.length){const selected=$('p5Food').value;$('p5Food').innerHTML=foods.map(f=>`<option value="${esc(f.id)}">${esc(bn?f.name_bn:f.name_en)}</option>`).join('');$('p5Food').value=selected;preview();}}
 new MutationObserver(applyP5Language).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+window.addEventListener('aurafit:data-imported',()=>refresh().catch(e=>{$('p5MealList').textContent='Could not refresh imported data: '+e.message;}));
