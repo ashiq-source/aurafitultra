@@ -25,5 +25,5 @@ test('Workout and sleep logs are saved in existing stores',()=>{
   assert.match(js,/put\(db,'workout_logs'/); assert.match(js,/put\(db,'sleep_logs'/);
 });
 test('PWA cache includes Phase 5 module and uses a new cache namespace',()=>{
-  assert.match(sw,/aurafit-ultra-v9-bundled-android/); assert.match(sw,/aurafit-phase5\.js/);
+  assert.match(sw,/aurafit-ultra-v10-bundled-android/); assert.match(sw,/aurafit-phase5\.js/);
 });
