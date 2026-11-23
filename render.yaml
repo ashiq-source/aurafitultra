@@ -13,12 +13,16 @@ services:
       - key: GEMINI_API_KEY
         sync: false
       - key: GEMINI_MODEL
-        value: gemini-2.5-flash
+        value: gemini-3.8-flash
+      - key: SUPABASE_URL
+        value: https://loqndxqwvhdhtujpneup.supabase.co
+      - key: SUPABASE_ANON_KEY
+        value: sb_publishable_P5jWYcpKU--P4bF2Z-zf8Q_kKcyKyE5
       - key: GEMINI_MAX_OUTPUT_TOKENS
         value: "1800"
       - key: AI_RATE_LIMIT_PER_MINUTE
         value: "12"
       - key: ALLOWED_ORIGINS
-        value: https://localhost,capacitor://localhost
+        value: https://aurafit-ai-ultra-api.onrender.com,https://localhost,capacitor://localhost
       - key: TRUST_PROXY
         value: "1"
