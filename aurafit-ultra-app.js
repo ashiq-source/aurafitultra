@@ -48,7 +48,7 @@ async function importBackupFile(file){
   const result=await store.importBackup(backup);
   await loadAll();
   window.dispatchEvent(new Event('aurafit:data-imported'));
-  if(isNativeAndroid())await refreshNativeNotificationStatus(false);
+  if(isNativeAndroid()){try{await refreshNativeNotificationStatus(false);}catch(error){console.warn('Reminder refresh after backup restore failed',error);}}
   status.textContent=t('importDone')+' '+result.restored+' records merged.';
   toast(t('importDone'));
  }catch(error){
