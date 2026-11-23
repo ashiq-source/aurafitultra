@@ -8,7 +8,7 @@ const result = await build({
     'aurafit-ultra-app': 'aurafit-ultra-app.js'
   },
   bundle: true,
-  splitting: true,
+  splitting: false,
   format: 'esm',
   platform: 'browser',
   target: ['es2022'],
