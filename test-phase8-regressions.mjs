@@ -53,4 +53,6 @@ test('Web content security policy permits only the required cloud APIs', () => {
   const server = read('./server.js');
   assert.match(server, /loqndxqwvhdhtujpneup\.supabase\.co/);
   assert.match(server, /www\.googleapis\.com/);
+  assert.match(server, /auth\.getUser\(bearer\[1\]\)/);
+  assert.match(server, /A valid AuraFit sign-in session is required/);
 });
