@@ -133,7 +133,7 @@ export async function syncCloud(){
 function driveToken(){if(googleAccessToken)return googleAccessToken;throw new Error('Google Drive permission is not active. Sign in again with Google, then retry.');}
 async function driveRequest(url,options={}){const response=await fetch(url,{...options,headers:{...(options.headers||{}),Authorization:'Bearer '+driveToken()}});if(!response.ok){const detail=await response.text();if(response.status===401)googleAccessToken=null;throw new Error('Google Drive error ('+response.status+'). '+detail.slice(0,240));}return response;}
 async function exportBackupData(){
- const db=await openAuraFitDB();try{const data={};for(const name of stores)data[name]=await readAll(db,name);return {appName:'AuraFit AI Ultra',backupFormat:'aurafit-ultra-backup',backupVersion:2,schemaVersion:2,exportedAt:new Date().toISOString(),recordCounts:Object.fromEntries(stores.map(n=>[n,data[n].length])),data};}finally{db.close();}
+ const db=await openAuraFitDB();try{const data={};for(const name of stores){data[name]=await readAll(db,name);if(name==='settings')data[name]=data[name].filter(row=>row?.syncTombstone!==true);}return {appName:'AuraFit AI Ultra',backupFormat:'aurafit-ultra-backup',backupVersion:2,schemaVersion:2,exportedAt:new Date().toISOString(),recordCounts:Object.fromEntries(stores.map(n=>[n,data[n].length])),data};}finally{db.close();}
 }
 export async function backupToGoogleDrive(){
  const backup=await exportBackupData(),date=new Date().toISOString().slice(0,10),name='AuraFit-AI-Ultra-Backup-'+date+'.json';
