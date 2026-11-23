@@ -32,6 +32,8 @@ test('Local record deletions create tombstones and cloud sync propagates them', 
   assert.match(cloud, /__aurafit_deleted/);
   assert.match(cloud, /deleteRows\(db,store,uniqueDeletes\)/);
   assert.match(cloud, /\.range\(offset,offset\+999\)/);
+  assert.match(cloud, /restoredSettings/);
+  assert.match(cloud, /deleteRows\(db,store,deletes\)/);
 });
 
 test('Cloud buttons have one event owner to protect the PKCE verifier', () => {
