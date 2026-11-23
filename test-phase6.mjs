@@ -5,4 +5,4 @@ test('Phase 6 reads existing local-first stores without schema changes',()=>{for
 test('Phase 6 AI requires explicit consent and optional context',()=>{assert.match(js,/p6Consent/);assert.match(js,/p6Include/);assert.match(js,/context\}/)});
 test('Phase 6 AI output uses textContent and is saved to AI history',()=>{assert.match(js,/out\.textContent/);assert.match(js,/objectStore\('ai_history'\)/)});
 test('Backend accepts personalized task while keeping existing protections',()=>{assert.match(server,/personalized/);assert.match(server,/GEMINI_API_KEY/)});
-test('PWA shell caches the Phase 6 module with a fresh namespace',()=>{assert.match(sw,/aurafit-ultra-v10-bundled-android/);assert.match(sw,/aurafit-phase6\.js/)});
+test('PWA shell caches the Phase 6 module with a fresh namespace',()=>{assert.match(sw,/aurafit-ultra-v11-bundled-android/);assert.match(sw,/aurafit-phase6\.js/)});
