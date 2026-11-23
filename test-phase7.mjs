@@ -12,7 +12,7 @@ test('Phase 7 reuses existing stores and preserves Phase 1-6 schema',()=>{assert
 test('Schedule and daily completion persist locally',()=>{assert.match(js,/phase7_plan/);assert.match(js,/phase7_done/);assert.match(js,/phase7_preferences/)});
 test('Workout progression stores sets, reps and load',()=>{assert.match(js,/exerciseName,sets,reps,loadKg/);assert.match(js,/data7\.workouts/)});
 test('Reports include print-to-PDF and CSV export',()=>{assert.match(js,/window\.print\(\)/);assert.match(js,/text\/csv/)});
-test('PWA cache uses a new v7 namespace and precaches Phase 7 module',()=>{assert.match(sw,/aurafit-ultra-v10-bundled-android/);assert.match(sw,/aurafit-phase7\.js/)});
+test('PWA cache uses a new v7 namespace and precaches Phase 7 module',()=>{assert.match(sw,/aurafit-ultra-v11-bundled-android/);assert.match(sw,/aurafit-phase7\.js/)});
 test('Package scripts include Phase 7 syntax check',()=>{assert.equal(pkg.version,'8.0.0');assert.match(pkg.scripts.check,/aurafit-phase7\.js/)});
 test('Responsive and print report styles are included',()=>{assert.match(css,/@media\(max-width:600px\)/);assert.match(css,/@media print/)});
 test('Phase 7 is reachable from mobile navigation too',()=>{assert.match(html,/<button data-page="phase7"><span>✧<\/span><small>Fitness<\/small><\/button>/)});
