@@ -1,4 +1,4 @@
-/* AuraFit AI Ultra — private Supabase sync + Google Drive backup. */
+/* AuraFft AI Ultra — private Supabase sync + Google Drive backup. */
 import { createClient } from '@supabase/supabase-js';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
