@@ -5,7 +5,7 @@ import { LocalNotifications } from '@capacitor/local-notifications';
 window.__AURAFIT_DIAG__?.('মূল অ্যাপ JavaScript চালু হয়েছে');
 
 const $ = id => document.getElementById(id);
-const todayISO = () => new Date().toISOString().slice(0,10);
+const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
 const uid = prefix => `${prefix}-${globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`}`;
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmtDate = (iso, lang) => { if(!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso || '—'; return new Intl.DateTimeFormat(lang==='bn'?'bn-BD':'en-US',{day:'numeric',month:'short',year:'numeric'}).format(new Date(`${iso}T12:00:00`)); };
