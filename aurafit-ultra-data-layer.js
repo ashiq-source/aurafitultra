@@ -117,6 +117,7 @@ export class AuraFitStore {
     const done = transactionDone(tx);
     const data = {};
     await Promise.all(names.map(async name => { data[name] = await requestResult(tx.objectStore(name).getAll()); }));
+    data.settings = data.settings.filter(row => row?.syncTombstone !== true);
     await done;
     return {
       appName: 'AuraFit AI Ultra', backupFormat: 'aurafit-ultra-backup', backupVersion: 2,
