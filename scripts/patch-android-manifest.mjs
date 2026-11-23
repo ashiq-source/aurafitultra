@@ -39,17 +39,17 @@ xml = xml.replace(application[0], appTag);
 const mainActivityPath = 'android/app/src/main/java/com/aurafit/aiultra/MainActivity.java';
 let mainActivity = await readFile(mainActivityPath, 'utf8');
 if (!mainActivity.includes('import android.os.Bundle;')) {
-  mainActivity = mainActivity.replace(/^(package [^;]+;)/m, '$1\\n\\nimport android.os.Bundle;');
+  mainActivity = mainActivity.replace(/^(package [^;]+;)/m, '$1\n\nimport android.os.Bundle;');
 }
 if (!mainActivity.includes('import androidx.activity.EdgeToEdge;')) {
-  mainActivity = mainActivity.replace(/^(package [^;]+;[\\s\\S]*?import android.os.Bundle;)/m, '$1\\nimport androidx.activity.EdgeToEdge;');
+  mainActivity = mainActivity.replace(/^(package [^;]+;[\s\S]*?import android.os.Bundle;)/m, '$1\nimport androidx.activity.EdgeToEdge;');
 }
 if (!mainActivity.includes('EdgeToEdge.enable(this)')) {
-  const emptyActivity = /public class MainActivity extends BridgeActivity\\s*\\{\\s*\\}/;
+  const emptyActivity = /public class MainActivity extends BridgeActivity\s*\{\s*\}/;
   if (emptyActivity.test(mainActivity)) {
-    mainActivity = mainActivity.replace(emptyActivity, 'public class MainActivity extends BridgeActivity {\\n    @Override\\n    public void onCreate(Bundle savedInstanceState) {\\n        super.onCreate(savedInstanceState);\\n        EdgeToEdge.enable(this);\\n    }\\n}');
+    mainActivity = mainActivity.replace(emptyActivity, 'public class MainActivity extends BridgeActivity {\n    @Override\n    public void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        EdgeToEdge.enable(this);\n    }\n}');
   } else if (mainActivity.includes('super.onCreate(savedInstanceState);')) {
-    mainActivity = mainActivity.replace('super.onCreate(savedInstanceState);', 'super.onCreate(savedInstanceState);\\n        EdgeToEdge.enable(this);');
+    mainActivity = mainActivity.replace('super.onCreate(savedInstanceState);', 'super.onCreate(savedInstanceState);\n        EdgeToEdge.enable(this);');
   } else {
     throw new Error('Could not enable Android edge-to-edge in MainActivity.');
   }
