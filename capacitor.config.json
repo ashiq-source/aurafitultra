@@ -12,10 +12,11 @@
       "backgroundColor": "#0b0920",
       "showSpinner": false
     },
-    "StatusBar": {
-      "style": "LIGHT",
-      "backgroundColor": "#0b0920",
-      "overlaysWebView": false
+    "SystemBars": {
+      "insetsHandling": "css",
+      "style": "DARK",
+      "hidden": false,
+      "initialViewportFitValueHint": "cover"
     }
   }
 }

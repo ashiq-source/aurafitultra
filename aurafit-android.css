@@ -1,8 +1,8 @@
 /* Android safe-area and touch ergonomics */
-html,body{overscroll-behavior-y:contain}body{padding-bottom:env(safe-area-inset-bottom)}button,a,input,select,textarea{touch-action:manipulation}input,select,textarea{font-size:16px} .android-cloud-panel{margin:14px 0;padding:16px;border:1px solid rgba(160,140,255,.25);border-radius:16px;background:rgba(35,27,75,.55)}
+html,body{overscroll-behavior-y:contain}body{padding-bottom:var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px))}button,a,input,select,textarea{touch-action:manipulation}input,select,textarea{font-size:16px} .android-cloud-panel{margin:14px 0;padding:16px;border:1px solid rgba(160,140,255,.25);border-radius:16px;background:rgba(35,27,75,.55)}
 
 /* Keep Android system bars outside the app content and respect device cutouts. */
-html{background:#0b0920;min-height:100%;padding-top:env(safe-area-inset-top,0px)}
-body{min-height:100vh;padding-top:0;padding-bottom:env(safe-area-inset-bottom,0px)}
+html{background:#0b0920;min-height:100%;padding-top:var(--safe-area-inset-top,env(safe-area-inset-top,0px))}
+body{min-height:100vh;padding-top:0;padding-bottom:var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px))}
 .topbar{top:0}
-.mobile-nav{padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+.mobile-nav{padding-bottom:calc(10px + var(--safe-area-inset-bottom,env(safe-area-inset-bottom,0px)))}

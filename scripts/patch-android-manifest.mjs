@@ -22,12 +22,40 @@ if (!activity.includes('android:scheme="com.aurafit.aiultra"')) {
 }
 xml = xml.replace(activityMatch[0], activity);
 
+const exactAlarmPermission = '<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />';
+if (!xml.includes('android.permission.SCHEDULE_EXACT_ALARM')) {
+  const appStart = xml.indexOf('<application');
+  if (appStart < 0) throw new Error('Android application element was not found before adding exact-alarm permission.');
+  xml = xml.slice(0, appStart) + exactAlarmPermission + '\n' + xml.slice(appStart);
+}
+
 const application = xml.match(/<application\b[^>]*>/);
 if (!application) throw new Error('Android application element was not found.');
 let appTag = application[0];
 if (!appTag.includes('android:fullBackupContent=')) appTag = appTag.replace('>', ' android:fullBackupContent="@xml/aurafit_backup_rules">');
 if (!appTag.includes('android:dataExtractionRules=')) appTag = appTag.replace('>', ' android:dataExtractionRules="@xml/aurafit_data_extraction_rules">');
 xml = xml.replace(application[0], appTag);
+
+const mainActivityPath = 'android/app/src/main/java/com/aurafit/aiultra/MainActivity.java';
+let mainActivity = await readFile(mainActivityPath, 'utf8');
+if (!mainActivity.includes('import android.os.Bundle;')) {
+  mainActivity = mainActivity.replace(/^(package [^;]+;)/m, '$1\n\nimport android.os.Bundle;');
+}
+if (!mainActivity.includes('import androidx.activity.EdgeToEdge;')) {
+  mainActivity = mainActivity.replace(/^(package [^;]+;[\s\S]*?import android.os.Bundle;)/m, '$1\nimport androidx.activity.EdgeToEdge;');
+}
+if (!mainActivity.includes('EdgeToEdge.enable(this)')) {
+  const emptyActivity = /public class MainActivity extends BridgeActivity\s*\{\s*\}/;
+  if (emptyActivity.test(mainActivity)) {
+    mainActivity = mainActivity.replace(emptyActivity, 'public class MainActivity extends BridgeActivity {\n    @Override\n    public void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        EdgeToEdge.enable(this);\n    }\n}');
+  } else if (mainActivity.includes('super.onCreate(savedInstanceState);')) {
+    mainActivity = mainActivity.replace('super.onCreate(savedInstanceState);', 'super.onCreate(savedInstanceState);\n        EdgeToEdge.enable(this);');
+  } else {
+    throw new Error('Could not enable Android edge-to-edge in MainActivity.');
+  }
+}
+if (!mainActivity.includes('EdgeToEdge.enable(this)')) throw new Error('Android edge-to-edge verification failed.');
+await writeFile(mainActivityPath, mainActivity);
 
 const xmlDir = 'android/app/src/main/res/xml';
 await mkdir(xmlDir, { recursive: true });

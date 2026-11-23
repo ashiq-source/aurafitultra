@@ -15,23 +15,24 @@
     "build:android:web": "node scripts/build-android-web.mjs"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
     "express-rate-limit": "^7.5.0",
     "helmet": "^8.1.0",
-    "@capacitor/android": "^7.4.3",
-    "@capacitor/core": "^7.4.3",
+    "@capacitor/android": "8.6.2",
+    "@capacitor/core": "8.6.2",
     "@supabase/supabase-js": "^2.57.4",
-    "@capacitor/local-notifications": "^7.0.0",
-    "@capacitor/app": "^7.0.0",
-    "@capacitor/browser": "^7.0.0",
-    "capacitor-secure-storage-plugin": "0.12.0"
+    "@capacitor/local-notifications": "8.3.1",
+    "@capacitor/app": "8.1.2",
+    "@capacitor/browser": "8.0.5",
+    "capacitor-secure-storage-plugin": "0.13.0",
+    "@capacitor/splash-screen": "8.0.2"
   },
   "devDependencies": {
-    "@capacitor/cli": "^7.4.3",
+    "@capacitor/cli": "8.6.2",
     "esbuild": "^0.25.0"
   }
 }

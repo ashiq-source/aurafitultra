@@ -40,5 +40,5 @@ The app code cannot create OAuth credentials for your Google Cloud or Supabase p
 - Google Drive API access uses the `drive.file` scope: AuraFit can create and read the backup files it creates, not browse the user's entire Drive.
 - Drive access tokens are held in memory by the app. If they expire or the app restarts, sign in with Google again before a Drive action.
 - Cloud Sync is manual in this release. It does not yet run continuously in the background.
-- Record deletion tombstones and conflict-resolution UI are not implemented; do not treat this as a multi-device database replication service.
+- Record deletions are now synchronized with tombstones. Conflicts are resolved automatically by the latest record timestamp; there is no manual conflict-resolution screen yet.
 - Test Google sign-in and Drive restore on a real Android device before production release.
