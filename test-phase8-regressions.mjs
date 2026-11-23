@@ -49,6 +49,19 @@ test('Cloud buttons have one event owner to protect the PKCE verifier', () => {
   assert.match(cloud, /already in progress/);
 });
 
+test('Local JSON backup can be restored without losing deletion tombstones', () => {
+  const layer = read('./aurafit-ultra-data-layer.js');
+  const app = read('./aurafit-ultra-app.js');
+  const html = read('./aurafit-ultra.html');
+  assert.match(layer, /async importBackup\(backup\)/);
+  assert.match(layer, /backupFormat: 'aurafit-ultra-backup'/);
+  assert.doesNotMatch(layer, /data\.settings = data\.settings\.filter/);
+  assert.match(app, /store\.importBackup\(backup\)/);
+  assert.match(app, /aurafit:data-imported/);
+  assert.match(html, /id="importBackup"/);
+  assert.match(html, /id="importBackupFile"/);
+});
+
 test('Offline cache includes Gemini and all eight feature modules', () => {
   const sw = read('./service-worker.js');
   assert.match(sw, /aurafit-ultra-v10-bundled-android/);
