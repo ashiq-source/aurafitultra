@@ -36,19 +36,6 @@ if (!appTag.includes('android:fullBackupContent=')) appTag = appTag.replace('>',
 if (!appTag.includes('android:dataExtractionRules=')) appTag = appTag.replace('>', ' android:dataExtractionRules="@xml/aurafit_data_extraction_rules">');
 xml = xml.replace(application[0], appTag);
 
-const stylesPath = 'android/app/src/main/res/values/styles.xml';
-let styles = await readFile(stylesPath, 'utf8');
-let patchedThemeCount = 0;
-styles = styles.replace(/<style\b(?=[^>]*name="AppTheme[^"]*")[^>]*>[\s\S]*?<\/style>/g, block => {
-  if (block.includes('android:windowOptOutEdgeToEdgeEnforcement')) return block;
-  patchedThemeCount++;
-  return block.replace('</style>', '    <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>\n    </style>');
-});
-if (patchedThemeCount) await writeFile(stylesPath, styles);
-if (!/name="AppTheme[^"]*"[^>]*>[\s\S]*?android:windowOptOutEdgeToEdgeEnforcement/.test(styles)) {
-  throw new Error('Android app theme could not be configured to keep the status bar outside the WebView.');
-}
-
 const xmlDir = 'android/app/src/main/res/xml';
 await mkdir(xmlDir, { recursive: true });
 await writeFile(xmlDir + '/aurafit_backup_rules.xml', '<?xml version="1.0" encoding="utf-8"?>\n<full-backup-content>\n    <exclude domain="sharedpref" path="cap_sec.xml" />\n</full-backup-content>\n');
