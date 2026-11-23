@@ -64,7 +64,7 @@ test('Local JSON backup can be restored without losing deletion tombstones', () 
 
 test('Offline cache includes Gemini and all eight feature modules', () => {
   const sw = read('./service-worker.js');
-  assert.match(sw, /aurafit-ultra-v10-bundled-android/);
+  assert.match(sw, /aurafit-ultra-v11-bundled-android/);
   assert.match(sw, /bundles\/aurafit-gemini\.js/);
   assert.match(sw, /aurafit-phase8\.js/);
 });
