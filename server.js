@@ -2,6 +2,7 @@ import express from 'express';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import 'dotenv/config';
+import { createClient } from '@supabase/supabase-js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -9,7 +10,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
 const API_KEY = process.env.GEMINI_API_KEY || '';
-const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const MODEL = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+const SUPABASE_URL = process.env.SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
+const authClient = SUPABASE_URL && SUPABASE_ANON_KEY ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: false, autoRefreshToken: false } }) : null;
 const configuredTokens = Number(process.env.GEMINI_MAX_OUTPUT_TOKENS || 1800);
 const MAX_OUTPUT_TOKENS = Number.isFinite(configuredTokens) ? Math.min(4096, Math.max(256, configuredTokens)) : 1800;
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(x => x.trim()).filter(Boolean);
@@ -36,6 +40,10 @@ app.use(express.json({limit:'20kb',strict:true}));
 const aiLimiter=rateLimit({windowMs:60_000,limit:Number(process.env.AI_RATE_LIMIT_PER_MINUTE||12),standardHeaders:'draft-7',legacyHeaders:false,message:{error:'Too many AI requests. Please wait a minute and try again.'}});
 app.get('/api/health',(req,res)=>res.json({ok:true,aiConfigured:Boolean(API_KEY),provider:'Google Gemini',model:MODEL}));
 app.post('/api/ai/generate',aiLimiter,async(req,res)=>{
+  const bearer=/^Bearer\\s+(.+)$/i.exec(req.get('authorization')||'');
+  if(!authClient||!bearer)return res.status(401).json({error:'A valid AuraFit sign-in session is required.'});
+  try{const {data,error}=await authClient.auth.getUser(bearer[1]);if(error||!data?.user)return res.status(401).json({error:'Your sign-in session is invalid or expired. Please sign in again.'});}
+  catch{return res.status(401).json({error:'Could not verify your sign-in session.'});}
   if(!API_KEY)return res.status(503).json({error:'Gemini is not configured on the server. Set GEMINI_API_KEY.'});
   const {prompt,task='chat',language='English',context=null}=req.body||{};
   if(typeof prompt!=='string'||!prompt.trim()||prompt.length>6000)return res.status(400).json({error:'Prompt must be 1–6000 characters.'});
