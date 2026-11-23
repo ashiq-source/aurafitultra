@@ -117,12 +117,56 @@ export class AuraFitStore {
     const done = transactionDone(tx);
     const data = {};
     await Promise.all(names.map(async name => { data[name] = await requestResult(tx.objectStore(name).getAll()); }));
-    data.settings = data.settings.filter(row => row?.syncTombstone !== true);
     await done;
     return {
       appName: 'AuraFit AI Ultra', backupFormat: 'aurafit-ultra-backup', backupVersion: 2,
       schemaVersion: DB_VERSION, exportedAt: nowISO(), recordCounts: Object.fromEntries(names.map(n => [n, data[n].length])), data
     };
+  }
+  async importBackup(backup) {
+    if (!backup || backup.appName !== 'AuraFit AI Ultra' || backup.backupFormat !== 'aurafit-ultra-backup' || !backup.data || typeof backup.data !== 'object') {
+      throw new Error('This file is not a valid AuraFit AI Ultra backup.');
+    }
+    if (Number(backup.backupVersion) > 2 || Number(backup.schemaVersion) > DB_VERSION) {
+      throw new Error('This backup was created by a newer AuraFit version. Update the app before importing it.');
+    }
+    const names = ['profile','weight_logs','daily_routines','daily_water_totals','meal_logs','workout_logs','sleep_logs','food_catalog','nutrition_goals','ai_history','settings'];
+    const counts = {};
+    const tx = this.db.transaction(names, 'readwrite');
+    const done = transactionDone(tx);
+    for (const name of names) {
+      const rows = Array.isArray(backup.data[name]) ? backup.data[name] : [];
+      const target = tx.objectStore(name);
+      counts[name] = 0;
+      for (const row of rows) {
+        if (!row || typeof row !== 'object') continue;
+        const key = row[STORES[name].keyPath];
+        if (key === undefined || key === null) continue;
+        target.put(clone(row));
+        if (name !== 'settings') tx.objectStore('settings').delete(syncTombstoneKey(name, key));
+        counts[name]++;
+      }
+    }
+    await done;
+    const stamp = row => row?.updatedAt || row?.updated_at || row?.createdAt || row?.created_at || '';
+    const toTime = value => { const n = Date.parse(value || ''); return Number.isFinite(n) ? n : 0; };
+    const restoredSettings = await this.getAll('settings');
+    const tombstones = restoredSettings.filter(row => row?.syncTombstone === true && row.storeName !== 'settings' && row.recordId != null);
+    const cachedRows = new Map();
+    for (const tomb of tombstones) {
+      const name = tomb.storeName;
+      if (!Object.hasOwn(STORES, name)) continue;
+      if (!cachedRows.has(name)) cachedRows.set(name, await this.getAll(name));
+      const keyPath = STORES[name].keyPath;
+      const existing = cachedRows.get(name).find(row => String(row?.[keyPath]) === String(tomb.recordId));
+      if (!existing || toTime(tomb.deletedAt || tomb.updatedAt) >= toTime(stamp(existing))) {
+        await this.delete(name, existing ? existing[keyPath] : tomb.recordId);
+        if (existing) cachedRows.set(name, cachedRows.get(name).filter(row => String(row?.[keyPath]) !== String(tomb.recordId)));
+      } else {
+        await this.delete('settings', tomb.key);
+      }
+    }
+    return { counts, restored: Object.values(counts).reduce((sum, count) => sum + count, 0), tombstones: tombstones.length };
   }
   #assertStore(name) { if (!Object.hasOwn(STORES, name)) throw new Error(`Unknown AuraFit store: ${name}`); }
 }
