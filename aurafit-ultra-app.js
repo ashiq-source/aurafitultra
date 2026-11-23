@@ -41,7 +41,7 @@ async function saveSettings(){const start=$('settingStart').value,target=$('sett
 async function exportBackup(){const backup=await store.exportBackup();const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`aurafit-ultra-backup-${todayISO()}.json`;a.click();URL.revokeObjectURL(url);toast(t('backupDone'));}
 async function handleClick(e){const pageBtn=e.target.closest('[data-page]');if(pageBtn){go(pageBtn.dataset.page);return;}const goBtn=e.target.closest('[data-go]');if(goBtn){go(goBtn.dataset.go);return;}const water=e.target.closest('[data-water]');if(water){await addWater(Number(water.dataset.water));toast(t('waterAdded'));return;}const toggle=e.target.closest('[data-toggle]');if(toggle){const item=routines.find(x=>String(x.id)===toggle.dataset.toggle);if(item){await store.put('daily_routines',{...item,enabled:item.enabled===false,updatedAt:new Date().toISOString()});await loadAll();if(isNativeAndroid())await syncNativeRoutineNotifications();}return;}const edit=e.target.closest('[data-edit]');if(edit){const item=routines.find(x=>String(x.id)===edit.dataset.edit);if(item)openModal('routine',item);return;}const del=e.target.closest('[data-delete-routine]');if(del){await store.delete('daily_routines',del.dataset.deleteRoutine);await loadAll();if(isNativeAndroid())await syncNativeRoutineNotifications();toast(t('deleted'));return;}const delW=e.target.closest('[data-delete-weight]');if(delW){await store.delete('weight_logs',delW.dataset.deleteWeight);await loadAll();toast(t('deleted'));}}
 
-let swRegistration=null, installPrompt=null, alarmTimer=null;
+let swRegistration=null, installPrompt=null, alarmTimer=null, nativeNotificationSyncPromise=null;
 const ROUTINE_NOTIFICATION_BASE=1400000000;
 const ROUTINE_NOTIFICATION_RANGE=400000000;
 const isNativeAndroid=()=>Capacitor.isNativePlatform()&&Capacitor.getPlatform()==='android';
@@ -58,15 +58,19 @@ function routineNotificationText(r){
 }
 async function syncNativeRoutineNotifications(){
   if(!isNativeAndroid())return;
-  const pending=await LocalNotifications.getPending();
-  const oldIds=pending.notifications.filter(n=>n.id>=ROUTINE_NOTIFICATION_BASE&&n.id<ROUTINE_NOTIFICATION_BASE+ROUTINE_NOTIFICATION_RANGE).map(n=>({id:n.id}));
-  if(oldIds.length)await LocalNotifications.cancel({notifications:oldIds});
-  const notifications=routines.filter(r=>r.enabled!==false&&/^([01]\d|2[0-3]):[0-5]\d$/.test(String(r.time||''))).map(r=>{
-    const [hour,minute]=r.time.split(':').map(Number);
-    return {id:routineNotificationId(r),...routineNotificationText(r),schedule:{on:{hour,minute},allowWhileIdle:true},channelId:'aurafit-routines',extra:{routineId:String(r.id)}};
-  });
-  if(notifications.length)await LocalNotifications.schedule({notifications});
-  return notifications.length;
+  if(nativeNotificationSyncPromise)return nativeNotificationSyncPromise;
+  nativeNotificationSyncPromise=(async()=>{
+    const pending=await LocalNotifications.getPending();
+    const oldIds=pending.notifications.filter(n=>n.id>=ROUTINE_NOTIFICATION_BASE&&n.id<ROUTINE_NOTIFICATION_BASE+ROUTINE_NOTIFICATION_RANGE).map(n=>({id:n.id}));
+    if(oldIds.length)await LocalNotifications.cancel({notifications:oldIds});
+    const notifications=routines.filter(r=>r.enabled!==false&&/^([01]\d|2[0-3]):[0-5]\d$/.test(String(r.time||''))).map(r=>{
+      const [hour,minute]=r.time.split(':').map(Number);
+      return {id:routineNotificationId(r),...routineNotificationText(r),schedule:{on:{hour,minute},allowWhileIdle:true},channelId:'aurafit-routines',extra:{routineId:String(r.id)}};
+    });
+    if(notifications.length)await LocalNotifications.schedule({notifications});
+    return notifications.length;
+  })();
+  try{return await nativeNotificationSyncPromise;}finally{nativeNotificationSyncPromise=null;}
 }
 async function refreshNativeNotificationStatus(openExactSettings=false){
   const permission=await LocalNotifications.checkPermissions();
