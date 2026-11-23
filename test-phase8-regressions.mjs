@@ -49,6 +49,12 @@ test('Offline cache includes Gemini and all eight feature modules', () => {
   assert.match(sw, /aurafit-phase8\.js/);
 });
 
+test('Android bundles do not depend on uncached split chunks', () => {
+  const build = read('./scripts/build-android-web.mjs');
+  assert.match(build, /splitting: false/);
+  assert.match(build, /bundle: true/);
+});
+
 test('Web content security policy permits only the required cloud APIs', () => {
   const server = read('./server.js');
   assert.match(server, /loqndxqwvhdhtujpneup\.supabase\.co/);
