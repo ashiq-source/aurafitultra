@@ -6,7 +6,7 @@ import { Browser } from '@capacitor/browser';
 import { openAuraFitDB, STORES } from './aurafit-ultra-data-layer.js';
 const cfg=window.AURAFIT_CONFIG||{};
 const status=m=>{const el=document.getElementById('cloudSyncStatus');if(el)el.textContent=m;};
-let client=null,googleAccessToken=null;
+let client=null,googleAccessToken=null,oauthInFlight=false,callbackInFlight=false;
 const excluded=new Set(['legacy_snapshots','migration_runs','ai_cache','app_cache']);
 const stores=Object.keys(STORES).filter(n=>!excluded.has(n));
 const nativeRedirect='com.aurafit.aiultra://login-callback';
@@ -19,18 +19,21 @@ export function getCloudClient(){
 }
 const oauthRedirect=()=>Capacitor.isNativePlatform()?nativeRedirect:(location.origin+location.pathname);
 async function captureOAuthCallback(url){
- if(!url)return false;
- const callback=new URL(url);
- const oauthError=callback.searchParams.get('error_description')||callback.searchParams.get('error');
- if(oauthError)throw new Error(oauthError);
- const code=callback.searchParams.get('code');
- if(!code)return false;
- const {data,error}=await getCloudClient().auth.exchangeCodeForSession(code);
- if(error)throw error;
- googleAccessToken=data?.session?.provider_token||googleAccessToken;
- status('Google account connected · '+(data?.session?.user?.email||'signed in')+'.');
- try{await Browser.close();}catch{}
- return true;
+ if(!url||callbackInFlight)return false;
+ callbackInFlight=true;
+ try{
+  const callback=new URL(url);
+  const oauthError=callback.searchParams.get('error_description')||callback.searchParams.get('error');
+  if(oauthError)throw new Error(oauthError);
+  const code=callback.searchParams.get('code');
+  if(!code)return false;
+  const {data,error}=await getCloudClient().auth.exchangeCodeForSession(code);
+  if(error)throw error;
+  googleAccessToken=data?.session?.provider_token||googleAccessToken;
+  status('Google account connected · '+(data?.session?.user?.email||'signed in')+'.');
+  try{await Browser.close();}catch{}
+  return true;
+ }finally{callbackInFlight=false;oauthInFlight=false;}
 }
 export async function initCloudAuth(){
  const c=getCloudClient();
@@ -47,11 +50,15 @@ export async function initCloudAuth(){
  return session;
 }
 async function startGoogleOAuth(scopes, prompt='select_account'){
- const native=Capacitor.isNativePlatform();
- const {data,error}=await getCloudClient().auth.signInWithOAuth({provider:'google',options:{redirectTo:oauthRedirect(),skipBrowserRedirect:native,scopes,queryParams:{access_type:'offline',prompt}}});
- if(error)throw error;
- if(native&&data?.url)await Browser.open({url:data.url});
- return data;
+ if(oauthInFlight)throw new Error('Google sign-in is already in progress. Finish or close the current sign-in window first.');
+ oauthInFlight=true;
+ try{
+  const native=Capacitor.isNativePlatform();
+  const {data,error}=await getCloudClient().auth.signInWithOAuth({provider:'google',options:{redirectTo:oauthRedirect(),skipBrowserRedirect:native,scopes,queryParams:{access_type:'offline',prompt}}});
+  if(error)throw error;
+  if(native&&data?.url)await Browser.open({url:data.url});
+  return data;
+ }catch(error){oauthInFlight=false;throw error;}
 }
 export async function googleSignIn(){
  return startGoogleOAuth('openid email profile','select_account');
