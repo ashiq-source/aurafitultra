@@ -22,6 +22,13 @@ if (!activity.includes('android:scheme="com.aurafit.aiultra"')) {
 }
 xml = xml.replace(activityMatch[0], activity);
 
+const exactAlarmPermission = '<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />';
+if (!xml.includes('android.permission.SCHEDULE_EXACT_ALARM')) {
+  const appStart = xml.indexOf('<application');
+  if (appStart < 0) throw new Error('Android application element was not found before adding exact-alarm permission.');
+  xml = xml.slice(0, appStart) + exactAlarmPermission + '\n' + xml.slice(appStart);
+}
+
 const application = xml.match(/<application\b[^>]*>/);
 if (!application) throw new Error('Android application element was not found.');
 let appTag = application[0];
