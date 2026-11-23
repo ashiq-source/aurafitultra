@@ -40,7 +40,7 @@ app.use(express.json({limit:'20kb',strict:true}));
 const aiLimiter=rateLimit({windowMs:60_000,limit:Number(process.env.AI_RATE_LIMIT_PER_MINUTE||12),standardHeaders:'draft-7',legacyHeaders:false,message:{error:'Too many AI requests. Please wait a minute and try again.'}});
 app.get('/api/health',(req,res)=>res.json({ok:true,aiConfigured:Boolean(API_KEY),provider:'Google Gemini',model:MODEL}));
 app.post('/api/ai/generate',aiLimiter,async(req,res)=>{
-  const bearer=/^Bearer\\s+(.+)$/i.exec(req.get('authorization')||'');
+  const bearer=/^Bearer\s+(.+)$/i.exec(req.get('authorization')||'');
   if(!authClient||!bearer)return res.status(401).json({error:'A valid AuraFit sign-in session is required.'});
   try{const {data,error}=await authClient.auth.getUser(bearer[1]);if(error||!data?.user)return res.status(401).json({error:'Your sign-in session is invalid or expired. Please sign in again.'});}
   catch{return res.status(401).json({error:'Could not verify your sign-in session.'});}
