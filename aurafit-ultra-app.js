@@ -1,6 +1,7 @@
 import { AuraFitStore } from './aurafit-ultra-data-layer.js';
 import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
+import { StatusBar, Style } from '@capacitor/status-bar';
 
 window.__AURAFIT_DIAG__?.('মূল অ্যাপ JavaScript চালু হয়েছে');
 
@@ -67,6 +68,14 @@ async function syncNativeRoutineNotifications(){
   return notifications.length;
 }
 async function setupPWA(){
+  if(isNativeAndroid()){
+    try{
+      await StatusBar.setOverlaysWebView({overlay:false});
+      await StatusBar.setBackgroundColor({color:'#0b0920'});
+      await StatusBar.setStyle({style:Style.Dark});
+      await StatusBar.show();
+    }catch(e){console.warn('Android status bar setup failed',e);}
+  }
   if('serviceWorker' in navigator){try{swRegistration=await navigator.serviceWorker.register('./service-worker.js');}catch(e){console.warn('PWA service worker unavailable',e);}}
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;const b=$('installApp');if(b)b.hidden=false;});
   window.addEventListener('appinstalled',()=>{installPrompt=null;const b=$('installApp');if(b)b.hidden=true;});
