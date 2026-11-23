@@ -17,7 +17,7 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(x => x
 app.disable('x-powered-by');
 app.set('trust proxy', process.env.TRUST_PROXY === '1' ? 1 : false);
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'same-origin' }, contentSecurityPolicy: { directives: {
-  defaultSrc: ["'self'"], scriptSrc: ["'self'"], styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'], fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'], imgSrc: ["'self'", 'data:'], connectSrc: ["'self'", 'https://generativelanguage.googleapis.com'], objectSrc: ["'none'"], frameAncestors: ["'none'"]
+  defaultSrc: ["'self'"], scriptSrc: ["'self'"], styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'], fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'], imgSrc: ["'self'", 'data:'], connectSrc: ["'self'", 'https://generativelanguage.googleapis.com', 'https://loqndxqwvhdhtujpneup.supabase.co', 'https://www.googleapis.com'], objectSrc: ["'none'"], frameAncestors: ["'none'"]
 }}}));
 app.use((req,res,next)=>{
   const origin=req.headers.origin;
