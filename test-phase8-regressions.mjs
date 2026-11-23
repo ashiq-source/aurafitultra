@@ -16,6 +16,7 @@ test('Daily summaries use the device local calendar date, not UTC date slicing',
   const p6 = read('./aurafit-phase6.js');
   const p8 = read('./aurafit-phase8.js');
   assert.match(app, /const todayISO = \(\) => \{ const d = new Date\(\)/);
+  assert.doesNotMatch(app, /oldUnknown/);
   assert.match(p5, /const localISO=d=>/);
   assert.doesNotMatch(p5, /toISOString\(\)\.slice\(0,\s*10\)/);
   assert.doesNotMatch(p6, /toISOString\(\)\.slice\(0,\s*10\)/);
