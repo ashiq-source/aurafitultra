@@ -1,8 +1,7 @@
 import { AuraFitStore } from './aurafit-ultra-data-layer.js';
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, SystemBars, SystemBarsStyle } from '@capacitor/core';
 import { App } from '@capacitor/app';
 import { LocalNotifications } from '@capacitor/local-notifications';
-import { StatusBar, Style } from '@capacitor/status-bar';
 
 window.__AURAFIT_DIAG__?.('মূল অ্যাপ JavaScript চালু হয়েছে');
 
@@ -94,10 +93,8 @@ async function refreshNativeNotificationStatus(openExactSettings=false){
 async function setupPWA(){
   if(isNativeAndroid()){
     try{
-      await StatusBar.setOverlaysWebView({overlay:false});
-      await StatusBar.setBackgroundColor({color:'#0b0920'});
-      await StatusBar.setStyle({style:Style.Dark});
-      await StatusBar.show();
+      await SystemBars.setStyle({style:SystemBarsStyle.Dark});
+      await SystemBars.show();
     }catch(e){console.warn('Android status bar setup failed',e);}
   }
   if('serviceWorker' in navigator){try{swRegistration=await navigator.serviceWorker.register('./service-worker.js');}catch(e){console.warn('PWA service worker unavailable',e);}}
