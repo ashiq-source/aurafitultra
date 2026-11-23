@@ -116,7 +116,8 @@ export async function syncCloud(){
    for(const remote of remoteRows){
     const id=String(remote.record_id),local=localById.get(id),tomb=localTombs.get(id),remoteTime=time(remote.updated_at);
     if(remote.payload?.__aurafit_deleted===true){
-     if(!local||remoteTime>=time(stamp(local)))deletions.push({id,deletedAt:remote.updated_at});
+     if(tomb&&time(tomb.deletedAt||tomb.updatedAt)>=remoteTime)addTombstone(id,tomb.deletedAt||tomb.updatedAt);
+     else if(!local||remoteTime>=time(stamp(local)))deletions.push({id,deletedAt:remote.updated_at});
      else addRecord(id,local);
      continue;
     }
