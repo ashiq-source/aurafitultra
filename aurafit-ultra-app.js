@@ -41,8 +41,8 @@ async function exportBackup(){const backup=await store.exportBackup();const blob
 async function importBackupFile(file){
  if(!file)return;
  const status=$('backupStatus');
- if(file.size>20*1024*1024){status.textContent='Backup file is too large (20 MB maximum).';return;}
- if(!window.confirm(t('importConfirm')))return;
+ if(file.size>20*1024*1024){status.textContent='Backup file is too large (20 MB maximum).';$('importBackupFile').value='';return;}
+ if(!window.confirm(t('importConfirm'))){$('importBackupFile').value='';return;}
  try{
   const backup=JSON.parse(await file.text());
   const result=await store.importBackup(backup);
