@@ -167,7 +167,7 @@ export async function restoreFromGoogleDrive(){
    await deleteRows(db,store,deletes);await clearTombstones(db,store,clears);
   }
  }finally{db.close();}
- status('Restored '+restored+' records from '+file.name+'. Existing matching records were updated; unrelated local records were kept.');return {restored,file};
+ status('Restored '+restored+' records from '+file.name+'. Existing matching records were updated; unrelated local records were kept.');window.dispatchEvent(new Event('aurafit:data-imported'));return {restored,file};
 }
 window.AuraFitCloud={cloudConfigured,initCloudAuth,googleSignIn,googleDriveSignIn,cloudSignIn,cloudSignUp,cloudSignOut,syncCloud,backupToGoogleDrive,restoreFromGoogleDrive};
 initCloudAuth().catch(e=>status('Cloud setup: '+e.message));
