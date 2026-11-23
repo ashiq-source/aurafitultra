@@ -10,8 +10,8 @@ const foodSeed=[
 const txDone=tx=>new Promise((res,rej)=>{tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error)});
 function openDB(){return new Promise((res,rej)=>{const q=indexedDB.open(DB,2);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
 async function all(db,store){const tx=db.transaction(store,'readonly'),done=txDone(tx),r=await new Promise((res,rej)=>{const q=tx.objectStore(store).getAll();q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)});await done;return r;}
-async function put(db,store,value){const tx=db.transaction(store,'readwrite');tx.objectStore(store).put(value);await txDone(tx);}
-async function del(db,store,key){const tx=db.transaction(store,'readwrite');tx.objectStore(store).delete(key);await txDone(tx);}
+async function put(db,store,value){const names=store==='settings'?['settings']:[store,'settings'];const tx=db.transaction(names,'readwrite');tx.objectStore(store).put(value);if(store!=='settings'&&value?.id!=null)tx.objectStore('settings').delete(`__aurafit_deleted__:${store}:${encodeURIComponent(String(value.id))}`);await txDone(tx);}
+async function del(db,store,key){const names=store==='settings'?['settings']:[store,'settings'];const tx=db.transaction(names,'readwrite');tx.objectStore(store).delete(key);if(store!=='settings'){const deletedAt=new Date().toISOString();tx.objectStore('settings').put({key:`__aurafit_deleted__:${store}:${encodeURIComponent(String(key))}`,syncTombstone:true,storeName:store,recordId:String(key),deletedAt,updatedAt:deletedAt});}await txDone(tx);}
 let db,foods=[],meals=[],workouts=[],sleeps=[],goal={calories:2000,protein:100,carbs:250,fat:65};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const localDate=iso=>new Intl.DateTimeFormat(document.documentElement.lang==='bn'?'bn-BD':'en-US',{day:'numeric',month:'short'}).format(new Date(`${iso}T12:00:00`));
