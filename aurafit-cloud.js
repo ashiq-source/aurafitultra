@@ -64,25 +64,70 @@ export async function cloudSignUp(email,password){const {data,error}=await getCl
 export async function cloudSignOut(){if(!client)return;const {error}=await client.auth.signOut();if(error)throw error;googleAccessToken=null;status('Signed out. Your local records remain on this device.');}
 const stamp=row=>row?.updatedAt||row?.createdAt||row?.dateISO||'1970-01-01T00:00:00.000Z';
 const time=value=>{const n=Date.parse(value||'');return Number.isFinite(n)?n:0;};
+const tombstoneKey=(store,id)=>'__aurafit_deleted__:'+store+':'+encodeURIComponent(String(id));
 const readAll=(db,store)=>new Promise((resolve,reject)=>{const tx=db.transaction(store,'readonly');const q=tx.objectStore(store).getAll();q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error);});
-const writeRows=(db,store,rows)=>new Promise((resolve,reject)=>{if(!rows.length){resolve();return;}const tx=db.transaction(store,'readwrite');for(const row of rows)tx.objectStore(store).put(row);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});
+const writeRows=(db,store,rows)=>new Promise((resolve,reject)=>{if(!rows.length){resolve();return;}const names=store==='settings'?[store]:[store,'settings'];const tx=db.transaction(names,'readwrite');for(const row of rows){tx.objectStore(store).put(row);if(store!=='settings'){const id=row?.[STORES[store].keyPath];if(id!==undefined&&id!==null)tx.objectStore('settings').delete(tombstoneKey(store,id));}}tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});
+const deleteRows=(db,store,rows)=>new Promise((resolve,reject)=>{if(!rows.length){resolve();return;}const tx=db.transaction([store,'settings'],'readwrite');for(const item of rows){tx.objectStore(store).delete(item.id);const deletedAt=item.deletedAt||new Date().toISOString();tx.objectStore('settings').put({key:tombstoneKey(store,item.id),syncTombstone:true,storeName:store,recordId:String(item.id),deletedAt,updatedAt:deletedAt});}tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});
+const clearTombstones=(db,store,ids)=>new Promise((resolve,reject)=>{if(!ids.length){resolve();return;}const tx=db.transaction('settings','readwrite');for(const id of ids)tx.objectStore('settings').delete(tombstoneKey(store,id));tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});
 export async function syncCloud(){
  const c=getCloudClient();const {data:{user},error:authError}=await c.auth.getUser();if(authError)throw authError;if(!user)throw new Error('Please sign in before syncing.');
  const db=await openAuraFitDB();let pushed=0,pulled=0;
  try{
+  const settingsRows=await readAll(db,'settings');
+  const tombstones=settingsRows.filter(r=>r?.syncTombstone===true&&r.storeName&&r.recordId!=null);
   for(const store of stores){
-   const keyPath=STORES[store].keyPath;const localRows=await readAll(db,store);const localById=new Map(localRows.map(r=>[String(r?.[keyPath]),r]));
-   const {data:remoteRows,error}=await c.from('aurafit_records').select('record_id,payload,updated_at').eq('user_id',user.id).eq('store_name',store).limit(5000);if(error)throw error;
-   const remoteById=new Map((remoteRows||[]).map(r=>[String(r.record_id),r]));const upload=[];
-   for(const row of localRows){const raw=row?.[keyPath];if(raw===undefined||raw===null||String(raw)==='')continue;const id=String(raw),remote=remoteById.get(id);
-    if(!remote||time(stamp(row))>=time(remote.updated_at))upload.push({user_id:user.id,store_name:store,record_id:id,payload:row,updated_at:new Date(Math.max(time(stamp(row)),Date.now())).toISOString()});
+   const keyPath=STORES[store].keyPath;
+   const allLocal=await readAll(db,store);
+   const localRows=store==='settings'?allLocal.filter(r=>r?.syncTombstone!==true):allLocal;
+   const localById=new Map(localRows.map(r=>[String(r?.[keyPath]),r]));
+   const localTombs=new Map(store==='settings'?[]:tombstones.filter(t=>t.storeName===store).map(t=>[String(t.recordId),t]));
+   let remoteRows=[],offset=0;
+   while(true){
+    const {data,error}=await c.from('aurafit_records').select('record_id,payload,updated_at').eq('user_id',user.id).eq('store_name',store).order('record_id').range(offset,offset+999);
+    if(error)throw error;
+    const page=data||[];remoteRows.push(...page);if(page.length<1000)break;offset+=1000;
    }
-   for(let i=0;i<upload.length;i+=100){const {error:upsertError}=await c.from('aurafit_records').upsert(upload.slice(i,i+100),{onConflict:'user_id,store_name,record_id'});if(upsertError)throw upsertError;pushed+=Math.min(100,upload.length-i);}
-   const download=[];for(const remote of remoteRows||[]){const local=localById.get(String(remote.record_id));if(remote.payload&&typeof remote.payload==='object'&&(!local||time(remote.updated_at)>time(stamp(local))))download.push(remote.payload);}
-   await writeRows(db,store,download);pulled+=download.length;
+   const remoteById=new Map(remoteRows.map(r=>[String(r.record_id),r]));
+   const uploads=new Map(),downloads=[],deletions=[],clearIds=[];
+   const addRecord=(id,row)=>uploads.set(String(id),{user_id:user.id,store_name:store,record_id:String(id),payload:row,updated_at:new Date(Math.max(time(stamp(row)),Date.now())).toISOString()});
+   const addTombstone=(id,deletedAt)=>uploads.set(String(id),{user_id:user.id,store_name:store,record_id:String(id),payload:{__aurafit_deleted:true,storeName:store,recordId:String(id),deletedAt},updated_at:deletedAt});
+   for(const [id,tomb] of localTombs){
+    const remote=remoteById.get(id),remoteTime=time(remote?.updated_at),deletedAt=tomb.deletedAt||tomb.updatedAt||'';
+    if(!remote||time(deletedAt)>=remoteTime)addTombstone(id,deletedAt||new Date().toISOString());
+    else if(remote.payload?.__aurafit_deleted===true){deletions.push({id,deletedAt:remote.updated_at});}
+    else{clearIds.push(id);if(remote.payload&&typeof remote.payload==='object')downloads.push(remote.payload);}
+   }
+   for(const row of localRows){
+    const raw=row?.[keyPath];if(raw===undefined||raw===null||String(raw)==='')continue;
+    const id=String(raw);if(localTombs.has(id))continue;
+    const remote=remoteById.get(id);
+    if(remote?.payload?.__aurafit_deleted===true){
+     if(time(remote.updated_at)>=time(stamp(row)))deletions.push({id,deletedAt:remote.updated_at});
+     else addRecord(id,row);
+    }else if(!remote||time(stamp(row))>=time(remote.updated_at))addRecord(id,row);
+   }
+   for(const remote of remoteRows){
+    const id=String(remote.record_id),local=localById.get(id),tomb=localTombs.get(id),remoteTime=time(remote.updated_at);
+    if(remote.payload?.__aurafit_deleted===true){
+     if(!local||remoteTime>=time(stamp(local)))deletions.push({id,deletedAt:remote.updated_at});
+     else addRecord(id,local);
+     continue;
+    }
+    if(tomb){
+     if(time(tomb.deletedAt||tomb.updatedAt)>=remoteTime)addTombstone(id,tomb.deletedAt||tomb.updatedAt);
+     else{clearIds.push(id);if(!local||remoteTime>time(stamp(local)))downloads.push(remote.payload);}
+    }else if(remote.payload&&typeof remote.payload==='object'&&(!local||remoteTime>time(stamp(local))))downloads.push(remote.payload);
+   }
+   const upload=[...uploads.values()];
+   for(let i=0;i<upload.length;i+=100){const batch=upload.slice(i,i+100);const {error:upsertError}=await c.from('aurafit_records').upsert(batch,{onConflict:'user_id,store_name,record_id'});if(upsertError)throw upsertError;pushed+=batch.length;}
+   const uniqueDeletes=[...new Map(deletions.map(x=>[x.id,x])).values()];
+   await deleteRows(db,store,uniqueDeletes);
+   await clearTombstones(db,store,[...new Set(clearIds)]);
+   const uniqueDownloads=[...new Map(downloads.map(row=>[String(row?.[keyPath]),row])).values()];
+   await writeRows(db,store,uniqueDownloads);pulled+=uniqueDownloads.length;
   }
  }finally{db.close();}
- status('Cloud sync complete · '+pushed+' uploaded · '+pulled+' downloaded. Your records are private to this account.');
+ status('Cloud sync complete · '+pushed+' uploaded · '+pulled+' downloaded. Deletions are synced across devices.');
  return {pushed,pulled};
 }
 function driveToken(){if(googleAccessToken)return googleAccessToken;throw new Error('Google Drive permission is not active. Sign in again with Google, then retry.');}
