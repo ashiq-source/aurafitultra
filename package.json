@@ -29,7 +29,6 @@
     "@capacitor/app": "8.1.2",
     "@capacitor/browser": "8.0.5",
     "capacitor-secure-storage-plugin": "0.13.0",
-    "@capacitor/status-bar": "8.0.4",
     "@capacitor/splash-screen": "8.0.2"
   },
   "devDependencies": {
