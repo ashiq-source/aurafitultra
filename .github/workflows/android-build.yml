@@ -74,6 +74,9 @@ jobs:
       - name: Sync Capacitor Android project
         run: npx cap sync android
 
+      - name: Set Android version code and name
+        run: node scripts/set-android-version.mjs
+
       - name: Build debug APK and release AAB
         working-directory: android
         run: |
