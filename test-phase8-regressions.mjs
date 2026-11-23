@@ -37,9 +37,13 @@ test('Local record deletions create tombstones and cloud sync propagates them', 
 test('Cloud buttons have one event owner to protect the PKCE verifier', () => {
   const android = read('./aurafit-android.js');
   const app = read('./aurafit-ultra-app.js');
+  const cloud = read('./aurafit-cloud.js');
   assert.doesNotMatch(android, /addEventListener\(['"]click/);
   assert.match(app, /function bindCloudActions\(\)/);
   assert.match(app, /cloudGoogleSignIn/);
+  assert.match(cloud, /oauthInFlight/);
+  assert.match(cloud, /callbackInFlight/);
+  assert.match(cloud, /already in progress/);
 });
 
 test('Offline cache includes Gemini and all eight feature modules', () => {
