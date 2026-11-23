@@ -157,7 +157,16 @@ export async function restoreFromGoogleDrive(){
  const file=list.files[0],content=await driveRequest('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(file.id)+'?alt=media'),backup=await content.json();
  if(backup.backupFormat!=='aurafit-ultra-backup'||!backup.data||typeof backup.data!=='object')throw new Error('This Drive file is not a valid AuraFit backup.');
  const db=await openAuraFitDB();let restored=0;
- try{for(const store of stores){const rows=backup.data[store];if(!Array.isArray(rows)||!STORES[store])continue;await writeRows(db,store,rows);restored+=rows.length;}}finally{db.close();}
+ try{
+  for(const store of stores){const rows=backup.data[store];if(!Array.isArray(rows)||!STORES[store])continue;await writeRows(db,store,rows);restored+=rows.length;}
+  const restoredSettings=await readAll(db,'settings');
+  for(const store of stores.filter(name=>name!=='settings')){
+   const localRows=await readAll(db,store),keyPath=STORES[store].keyPath,localById=new Map(localRows.map(row=>[String(row?.[keyPath]),row]));
+   const tombs=restoredSettings.filter(row=>row?.syncTombstone===true&&row.storeName===store&&row.recordId!=null),deletes=[],clears=[];
+   for(const tomb of tombs){const id=String(tomb.recordId),local=localById.get(id),deletedAt=tomb.deletedAt||tomb.updatedAt;if(!local||time(deletedAt)>=time(stamp(local)))deletes.push({id,deletedAt});else clears.push(id);}
+   await deleteRows(db,store,deletes);await clearTombstones(db,store,clears);
+  }
+ }finally{db.close();}
  status('Restored '+restored+' records from '+file.name+'. Existing matching records were updated; unrelated local records were kept.');return {restored,file};
 }
 window.AuraFitCloud={cloudConfigured,initCloudAuth,googleSignIn,googleDriveSignIn,cloudSignIn,cloudSignUp,cloudSignOut,syncCloud,backupToGoogleDrive,restoreFromGoogleDrive};
