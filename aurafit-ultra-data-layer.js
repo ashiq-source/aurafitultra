@@ -25,6 +25,7 @@ export const STORES = Object.freeze({
 
 const nowISO = () => new Date().toISOString();
 const clone = value => value == null ? value : JSON.parse(JSON.stringify(value));
+export const syncTombstoneKey = (storeName, recordId) => `__aurafit_deleted__:${storeName}:${encodeURIComponent(String(recordId))}`;
 
 export function openAuraFitDB(indexedDBImpl = globalThis.indexedDB) {
   if (!indexedDBImpl) return Promise.reject(new Error('IndexedDB is not available in this browser context.'));
@@ -76,17 +77,39 @@ export class AuraFitStore {
   }
   async put(storeName, value) {
     this.#assertStore(storeName);
-    const tx = this.db.transaction(storeName, 'readwrite');
+    const names = storeName === 'settings' ? ['settings'] : [storeName, 'settings'];
+    const tx = this.db.transaction(names, 'readwrite');
     const done = transactionDone(tx);
-    const result = await requestResult(tx.objectStore(storeName).put(clone(value)));
+    const resultRequest = tx.objectStore(storeName).put(clone(value));
+    if (storeName !== 'settings') {
+      const keyPath = STORES[storeName].keyPath;
+      const recordId = value?.[keyPath];
+      if (recordId !== undefined && recordId !== null) {
+        tx.objectStore('settings').delete(syncTombstoneKey(storeName, recordId));
+      }
+    }
+    const result = await requestResult(resultRequest);
     await done;
     return result;
   }
   async delete(storeName, key) {
     this.#assertStore(storeName);
-    const tx = this.db.transaction(storeName, 'readwrite');
+    const names = storeName === 'settings' ? ['settings'] : [storeName, 'settings'];
+    const tx = this.db.transaction(names, 'readwrite');
+    const done = transactionDone(tx);
     tx.objectStore(storeName).delete(key);
-    await transactionDone(tx);
+    if (storeName !== 'settings') {
+      const deletedAt = nowISO();
+      tx.objectStore('settings').put({
+        key: syncTombstoneKey(storeName, key),
+        syncTombstone: true,
+        storeName,
+        recordId: String(key),
+        deletedAt,
+        updatedAt: deletedAt
+      });
+    }
+    await done;
   }
   async exportBackup() {
     const names = ['profile','weight_logs','daily_routines','daily_water_totals','meal_logs','workout_logs','sleep_logs','food_catalog','nutrition_goals','ai_history','settings'];
