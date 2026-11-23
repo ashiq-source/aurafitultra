@@ -57,7 +57,7 @@ async function startGoogleOAuth(scopes, prompt='select_account'){
   const native=Capacitor.isNativePlatform();
   const {data,error}=await getCloudClient().auth.signInWithOAuth({provider:'google',options:{redirectTo:oauthRedirect(),skipBrowserRedirect:native,scopes,queryParams:{access_type:'offline',prompt}}});
   if(error)throw error;
-  if(native&&data?.url)await Browser.open({url:data.url});
+  if(native){if(!data?.url)throw new Error('Supabase did not return a Google sign-in URL. Check the OAuth provider configuration.');await Browser.open({url:data.url});}
   return data;
  }catch(error){oauthInFlight=false;throw error;}
 }
