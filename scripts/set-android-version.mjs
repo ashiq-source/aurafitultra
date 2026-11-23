@@ -2,8 +2,13 @@ import { readFile, writeFile } from 'node:fs/promises';
 
 const gradlePath = 'android/app/build.gradle';
 const packageJson = JSON.parse(await readFile('package.json', 'utf8'));
-const androidVariables = await readFile('android/variables.gradle', 'utf8');
-if (!/targetSdkVersion\s*=\s*36/.test(androidVariables)) throw new Error('Capacitor Android project must target API 36 for current Play Store submissions.');
+let androidVariables = await readFile('android/variables.gradle', 'utf8');
+for (const setting of ['compileSdkVersion', 'targetSdkVersion']) {
+  const pattern = new RegExp('\\\\b' + setting + '\\\\s*=\\\\s*\\\\d+');
+  if (!pattern.test(androidVariables)) throw new Error('Android ' + setting + ' was not found in variables.gradle.');
+  androidVariables = androidVariables.replace(pattern, setting + ' = 36');
+}
+await writeFile('android/variables.gradle', androidVariables);
 const runNumber = Number(process.env.GITHUB_RUN_NUMBER);
 const versionCode = Number.isSafeInteger(runNumber) && runNumber > 0 ? runNumber : 1;
 const versionName = String(packageJson.version || '1.0.0');
