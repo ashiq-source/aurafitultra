@@ -1,4 +1,4 @@
-const CACHE='aurafit-ultra-v10-bundled-android';
+const CACHE='aurafit-ultra-v11-bundled-android';
 const CORE=['./','./aurafit-ultra.html','./aurafit-ultra.css','./bundles/aurafit-cloud.js','./bundles/aurafit-gemini.js','./bundles/aurafit-android.js','./bundles/aurafit-ultra-app.js','./aurafit-phase5.js','./aurafit-phase6.js','./aurafit-phase7.js','./aurafit-phase8.js','./aurafit-config.js','./aurafit-cloud.js','./aurafit-android.js','./aurafit-android.css','./aurafit-ultra-data-layer.js','./manifest.webmanifest','./icons/icon.svg'];
 self.addEventListener('install',event=>event.waitUntil((async()=>{const c=await caches.open(CACHE);await c.addAll(CORE);await self.skipWaiting();})()));
 self.addEventListener('activate',event=>event.waitUntil((async()=>{for(const k of await caches.keys())if(k!==CACHE)await caches.delete(k);await self.clients.claim();})()));
