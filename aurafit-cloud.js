@@ -40,6 +40,7 @@ export async function initCloudAuth(){
  try{
   if(Capacitor.isNativePlatform()){
    App.addListener('appUrlOpen',async({url})=>{try{if(await captureOAuthCallback(url))history.replaceState({},document.title,'/');}catch(e){status('Google sign-in failed: '+e.message);}});
+   Browser.addListener('browserFinished',()=>{oauthInFlight=false;});
    const launch=await App.getLaunchUrl();if(launch?.url)await captureOAuthCallback(launch.url);
   }else if(new URLSearchParams(location.search).has('code')){await captureOAuthCallback(location.href);history.replaceState({},document.title,location.pathname);}
  }catch(e){status('Authentication callback: '+e.message);}
